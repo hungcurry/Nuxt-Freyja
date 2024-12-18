@@ -1,0 +1,42 @@
+{
+  "name": "nuxt-app",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@iconify/vue": "^4.1.2",
+    "@nuxt/eslint": "^0.7.2",
+    "@pinia/nuxt": "^0.7.0",
+    "@popperjs/core": "^2.11.8",
+    "@types/bootstrap": "^5.2.10",
+    "axios": "^1.7.9",
+    "bootstrap": "^5.3.3",
+    "dayjs": "^1.11.13",
+    "nuxt": "^3.14.1592",
+    "pinia": "^2.3.0",
+    "sweetalert2": "^11.14.5",
+    "swiper": "^11.1.15",
+    "v-calendar": "^3.1.2",
+    "vue": "latest",
+    "vue-router": "latest",
+    "vue-screen-utils": "1.0.0-beta.13",
+    "vue-tsc": "2.1.10"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^3.11.2",
+    "@unocss/nuxt": "^0.64.1",
+    "eslint": "^9.16.0",
+    "sass": "1.77.6",
+    "typescript": "^5.6.3",
+    "unocss": "^0.64.1"
+  }
+}

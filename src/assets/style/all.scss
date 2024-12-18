@@ -1,0 +1,11 @@
+// -----------------
+// bootstrap
+// -----------------
+@import 'config/_bootstrap';
+// -----------------
+// base
+// -----------------
+@import 'config/_colors.scss';
+@import 'config/_custom.scss';
+// 必須放最後
+@import 'bootstrap/scss/utilities/api';
