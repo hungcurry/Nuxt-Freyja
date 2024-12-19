@@ -1,36 +1,42 @@
-interface TRoomFeature {
-  title: string
-  isProvide: boolean
+import type { TRoomFeature } from '@/types/dataTypes'
+/** API 詳細基礎回應結構 */
+type TApiBaseResponse = {
+  status: boolean | 'success' | 'error' | 'fail' | 'ok'
+  message?: string
+  code?: number
+  details?: unknown
 }
-interface TUserRegister {
-  name: string
-  email: string
-  password: string
-  phone: string
-  birthday: string
-  address: {
-    zipcode: string
-    detail: string
-  }
+/** 詳細失敗回應結構 */
+type TApiFailureResponse = Omit<TApiBaseResponse, 'status'> & {
+  status: false | 'error' | 'fail'
+  message: string // 確保失敗回應中必定有錯誤訊息
+  [key: string]: unknown
 }
-interface TAddress {
-  zipcode: number
-  detail: string
-  county: string
-  city: string
+/** 詳細成功回應結構 */
+type TApiSuccessResponse<T = unknown> = Omit<TApiBaseResponse, 'status'> & {
+  status: true | 'success' | 'ok'
+  data?: T
+  result?: T
+  token?: string
+  [key: string]: unknown
+}
+/** API 詳細回應型別 */
+type TApiResponse<T = unknown> = TApiSuccessResponse<T> | TApiFailureResponse
+
+/** API 通用回應型別 */
+type TApiGenericResponse<T> = {
+  data?: T
+  result?: T
+  status?: string
+  message?: string
+  token?: string
+  [key: string]: T
 }
 // ===================
-// ... API 回應型別 ...
+// ... 項目類型 ...
 // ===================
-// 通用的 API 格式
-interface TApiResponse<T> {
-  data?: T // 例如 axios 的 { data }
-  result?: T // 例如 $fetch 常見的 { result }
-  status?: string // 可能的 API 狀態欄位
-  message?: string // 可選的訊息欄位，用於錯誤信息等
-  token?: string // 可選的 token 欄位，用於登入等
-}
-interface TApiNewsItem {
+// 新聞項目類型
+type TApiNewsItem = {
   _id: string
   title: string
   description: string
@@ -38,30 +44,50 @@ interface TApiNewsItem {
   createdAt: string
   updatedAt: string
 }
-interface TApiRoomItem {
+// 房間項目類型
+type TApiRoomItem = {
   _id: string
   name: string
   description: string
+  imageUrl: string
+  imageUrlList: string[]
   areaInfo: string
   bedInfo: string
   maxPeople: number
   price: number
-  imageUrl: string
-  imageUrlList: string[]
+  status: number
   layoutInfo: TRoomFeature[]
   facilityInfo: TRoomFeature[]
   amenityInfo: TRoomFeature[]
+  createdAt: string
+  updatedAt: string
+  totalPrice?: number
 }
-interface TApiUser {
+// 用戶類型
+type TApiUser = {
+  address: {
+    zipcode: string | number
+    county: string
+    district: string
+    detail: string
+  }
   name: string
   email: string
   phone: string
-  birthday: string
-  address: TAddress
-  verificationToken: string
-  _id: string
-  createdAt: string
-  updatedAt: string
-  id: string
 }
-export type { TApiNewsItem, TApiResponse, TApiRoomItem, TApiUser, TUserRegister }
+// 認證類型
+type TApiAuth = {
+  status: boolean
+  token: string
+}
+export type {
+  TApiAuth,
+  TApiBaseResponse,
+  TApiFailureResponse,
+  TApiGenericResponse,
+  TApiNewsItem,
+  TApiResponse,
+  TApiRoomItem,
+  TApiSuccessResponse,
+  TApiUser,
+}

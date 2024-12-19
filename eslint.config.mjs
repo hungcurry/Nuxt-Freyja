@@ -66,6 +66,8 @@ export default withNuxt(
         '@typescript-eslint/no-namespace': 'error',
         // 關閉未使用變數的檢查 // ['warn']
         '@typescript-eslint/no-unused-vars': 'off',
+        // 使用 type 關閉強制使用 interface
+        'ts/consistent-type-definitions': 'off',
       },
     },
   }),
