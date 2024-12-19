@@ -5,39 +5,40 @@ definePageMeta({
   name: 'room-detail',
 })
 
+const MAX_BOOKING_PEOPLE = 10
+const bookingPeople = ref(1)
+const daysCount = ref(0)
+
+// 預訂日期相關資料
 const datePickerModal = useTemplateRef('datePickerModal')
+const currentDate = new Date()
+const bookingDate = ref({
+  date: {
+    start: formatDate(currentDate), // 入住日期
+    end: null, // 退房日期
+  },
+  minDate: new Date(), // 最小可選日期(今天)
+  maxDate: new Date(currentDate.setFullYear(currentDate.getFullYear() + 1)), // 最大可選日期(一年後)
+})
+// 開啟日期選擇器 modal
 function openModal() {
   datePickerModal.value?.openModal()
 }
-
-const MAX_BOOKING_PEOPLE = 10
-const bookingPeople = ref(1)
-
-const daysCount = ref(0)
-
-const daysFormatOnMobile = (date?: string) => date?.split('-').slice(1, 3).join(' / ')
-
+// 日期格式化函式 (YYYY-MM-DD)
 function formatDate(date: Date) {
-  const offsetToUTC8 = date.getHours() + 8
+  const offsetToUTC8 = date.getHours() + 8 // 調整為 UTC+8 時區
   date.setHours(offsetToUTC8)
   return date.toISOString().split('T')[0]
 }
-
-const currentDate = new Date()
-
-const bookingDate = reactive({
-  date: {
-    start: formatDate(currentDate),
-    end: null,
-  },
-  minDate: new Date(),
-  maxDate: new Date(currentDate.setFullYear(currentDate.getFullYear() + 1)),
-})
-
+// 手機版日期格式化函式 (MM/DD)
+function daysFormatOnMobile(date?: string) {
+  return date?.split('-').slice(1, 3).join(' / ')
+}
+// 處理日期變更
 function handleDateChange(bookingInfo: any) {
   const { start, end } = bookingInfo.date
-  bookingDate.date.start = start
-  bookingDate.date.end = end
+  bookingDate.value.date.start = start
+  bookingDate.value.date.end = end
 
   bookingPeople.value = bookingInfo?.people || 1
   daysCount.value = bookingInfo.daysCount
@@ -47,9 +48,7 @@ function handleDateChange(bookingInfo: any) {
 <template>
   <main class="mt-18 mt-md-30 bg-neutral-100">
     <section class="p-md-20 bg-primary-10">
-      <div
-        class="d-none d-md-block position-relative"
-      >
+      <div class="d-none d-md-block position-relative">
         <div class="d-flex gap-2 rounded-3xl overflow-hidden">
           <div style="width: 52.5vw;">
             <img
@@ -585,6 +584,7 @@ function handleDateChange(bookingInfo: any) {
 <style lang="scss" scoped>
 @import "bootstrap/scss/mixins/breakpoints";
 
+// 斷點設定
 $grid-breakpoints: (
   xs: 0,
   sm: 576px,
@@ -595,15 +595,18 @@ $grid-breakpoints: (
   xxxl: 1537px
 );
 
+// 圓角設定
 .rounded-3xl {
   border-radius: 1.25rem;
 }
 
+// 房型資訊卡片樣式
 .card-info {
   width: 97px;
   height: 97px;
 }
 
+// 標題裝飾線樣式
 .title-deco {
   display: flex;
   align-items: center;
@@ -619,6 +622,7 @@ $grid-breakpoints: (
   margin-right: 0.75rem;
 }
 
+// 設備列表項目樣式
 .flex-item {
   flex: 1 1 15%;
 
@@ -627,6 +631,7 @@ $grid-breakpoints: (
   }
 }
 
+// 日期選擇器游標樣式
 input[type="date"] {
   cursor: pointer;
 }

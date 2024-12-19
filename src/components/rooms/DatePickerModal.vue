@@ -5,39 +5,39 @@ import { DatePicker } from 'v-calendar'
 import { useScreens } from 'vue-screen-utils'
 import 'v-calendar/style.css'
 
+// Props & Emits
 const props = defineProps({
   dateTime: {
     type: Object,
     required: true,
   },
 })
-
 const emit = defineEmits(['handleDateChange'])
 
+// Modal 相關
 const { $bootstrap } = useNuxtApp()
 const modal = ref<ModalInstance | null>(null)
-
-onMounted(() => {
-  const dateModalEl = document.getElementById('dateModal')
-
-  if (dateModalEl && $bootstrap) {
-    modal.value = new ($bootstrap as any).Modal(dateModalEl)
-  }
-})
 
 function openModal() {
   modal.value?.show()
 }
-
 function closeModal() {
   modal.value?.hide()
 }
-
 defineExpose({
   openModal,
   closeModal,
 })
-
+onMounted(() => {
+  const dateModalEl = document.getElementById('dateModal')
+  if (dateModalEl && $bootstrap)
+    modal.value = new ($bootstrap as any).Modal(dateModalEl)
+})
+// ----------------------------------------
+// 日期選擇相關
+const MAX_BOOKING_PEOPLE = 10
+const bookingPeopleMobile = ref(1)
+const isConfirmDateOnMobile = ref(false)
 const tempDate = reactive({
   date: {
     start: props.dateTime.date.start,
@@ -47,66 +47,54 @@ const tempDate = reactive({
   maxDate: props.dateTime.maxDate,
   key: 0,
 })
-
 const masks = {
   title: 'YYYY 年 MM 月',
   modelValue: 'YYYY-MM-DD',
 }
 
-const { mapCurrent } = useScreens({
-  md: '768px',
-})
-
+// 響應式設定
+const { mapCurrent } = useScreens({ md: '768px' })
 const rows = mapCurrent({ md: 1 }, 2)
 const columns = mapCurrent({ md: 2 }, 1)
 const expanded = mapCurrent({ md: false }, true)
 const titlePosition = mapCurrent({ md: 'center' }, 'left')
-
-const formatDateTitle = (date?: string) => date?.replaceAll('-', ' / ')
-
+// 計算天數
 const daysCount = computed(() => {
-  const startDate = tempDate.date.start
-  const endDate = tempDate.date.end
-
-  if (startDate === null || endDate === null)
+  const { start, end } = tempDate.date
+  if (!start || !end)
     return 0
 
-  const differenceTime = new Date(endDate).getTime() - new Date(startDate).getTime()
-
-  const differenceDay = Math.round(differenceTime / (1000 * 60 * 60 * 24))
-
-  return differenceDay
+  const differenceTime = new Date(end).getTime() - new Date(start).getTime()
+  return Math.round(differenceTime / (1000 * 60 * 60 * 24))
 })
 
-const MAX_BOOKING_PEOPLE = 10
-const bookingPeopleMobile = ref(1)
-
-const isConfirmDateOnMobile = ref(false)
-
+// 工具函數
+function formatDateTitle(date?: string) {
+  return date?.replaceAll('-', ' / ')
+}
+// 操作函數
 function confirmDateOnMobile() {
   isConfirmDateOnMobile.value = true
 }
-
 function confirmDate() {
   const isMobile = mapCurrent({ md: false }, true)
+  const dateData = {
+    date: tempDate.date,
+    daysCount,
+  }
 
   if (isMobile.value) {
     emit('handleDateChange', {
-      date: tempDate.date,
+      ...dateData,
       people: bookingPeopleMobile,
-      daysCount,
     })
   }
   else {
-    emit('handleDateChange', {
-      date: tempDate.date,
-      daysCount,
-    })
+    emit('handleDateChange', dateData)
   }
 
   closeModal()
 }
-
 function clearDate() {
   tempDate.date.start = null
   tempDate.date.end = null
@@ -126,6 +114,7 @@ function clearDate() {
         :class="{ 'mt-auto': isConfirmDateOnMobile }"
         class="modal-content gap-6 gap-md-10 rounded-3xl"
       >
+        <!-- Mobile Header -->
         <div class="d-md-none modal-header px-6 py-4 bg-neutral-40">
           <div class="d-flex flex-column gap-4">
             <button
@@ -144,9 +133,7 @@ function clearDate() {
               v-else
               class="d-flex align-items-center gap-4"
             >
-              <h3
-                class="modal-title mb-0 text-neutral-100 fs-6 fw-bold"
-              >
+              <h3 class="modal-title mb-0 text-neutral-100 fs-6 fw-bold">
                 {{ daysCount }} 晚
               </h3>
               <div class="d-flex gap-2 text-neutral-80 fs-8 fw-medium">
@@ -157,17 +144,17 @@ function clearDate() {
             </div>
           </div>
         </div>
+
+        <!-- Desktop Header -->
         <div class="d-none d-md-flex modal-header gap-15 p-8 pb-0 border-0">
           <div>
-            <h3
-              class="modal-title mb-2 text-neutral-100 fs-5 fw-bold"
-            >
+            <h3 class="modal-title mb-2 text-neutral-100 fs-5 fw-bold">
               {{ daysCount }} 晚
             </h3>
             <div class="d-flex gap-2 text-neutral-80 fw-medium">
-              <span>{{ tempDate.date.start?.replaceAll('-', ' / ') }}</span>
+              <span>{{ formatDateTitle(tempDate.date.start) }}</span>
               -
-              <span>{{ tempDate.date.end?.replaceAll('-', ' / ') }}</span>
+              <span>{{ formatDateTitle(tempDate.date.end) }}</span>
             </div>
           </div>
 
@@ -209,6 +196,8 @@ function clearDate() {
             </div>
           </div>
         </div>
+
+        <!-- Modal Body -->
         <div class="modal-body px-6 px-md-8 py-0">
           <div
             v-if="!isConfirmDateOnMobile"
@@ -262,9 +251,7 @@ function clearDate() {
 
               <button
                 :class="{
-                  'disabled bg-neutral-40':
-                    bookingPeopleMobile
-                    === MAX_BOOKING_PEOPLE,
+                  'disabled bg-neutral-40': bookingPeopleMobile === MAX_BOOKING_PEOPLE,
                 }"
                 class="btn btn-neutral-0 p-4 border border-neutral-40 rounded-circle"
                 type="button"
@@ -278,9 +265,9 @@ function clearDate() {
             </div>
           </div>
         </div>
-        <div
-          class="d-none d-md-flex modal-footer p-3 p-md-8 pt-0 border-0"
-        >
+
+        <!-- Desktop Footer -->
+        <div class="d-none d-md-flex modal-footer p-3 p-md-8 pt-0 border-0">
           <button
             type="button"
             class="btn btn-outline-neutral-80 flex-grow-1 flex-md-grow-0 p-4 fw-bold border-0 rounded-3"
@@ -297,9 +284,8 @@ function clearDate() {
           </button>
         </div>
 
-        <div
-          class="d-md-none modal-footer p-3 p-md-8 pt-0 border-0"
-        >
+        <!-- Mobile Footer -->
+        <div class="d-md-none modal-footer p-3 p-md-8 pt-0 border-0">
           <template v-if="isConfirmDateOnMobile">
             <button
               type="button"
@@ -341,85 +327,83 @@ function clearDate() {
 <style lang="scss" scoped>
 .modal {
   backdrop-filter: blur(10px);
+
+  &-dialog {
+    max-width: 740px;
+  }
 }
 
-.modal-dialog {
-  max-width: 740px;
-}
+.date-picker {
+  :deep(.vc-primary) {
+    --vc-accent-50: #f0f9ff;
+    --vc-accent-100: #e0f2fe;
+    --vc-accent-200: #F9F9F9;
+    --vc-accent-300: #7dd3fc;
+    --vc-accent-400: #38bdf8;
+    --vc-accent-500: #0ea5e9;
+    --vc-accent-600: #000000;
+    --vc-accent-700: #FFFFFF;
+    --vc-accent-800: #F9F9F9;
+    --vc-accent-900: #000000;
+  }
 
-.date-picker :deep(.vc-primary) {
-  --vc-accent-50: #f0f9ff;
-  --vc-accent-100: #e0f2fe;
-  --vc-accent-200: #F9F9F9;
-  --vc-accent-300: #7dd3fc;
-  --vc-accent-400: #38bdf8;
-  --vc-accent-500: #0ea5e9;
-  --vc-accent-600: #000000;
-  --vc-accent-700: #FFFFFF;
-  --vc-accent-800: #F9F9F9;
-  --vc-accent-900: #000000;
-}
+  :deep(.vc-container) {
+    --vc-font-family: "Noto Serif TC", serif;
+  }
 
-.date-picker :deep(.vc-container) {
-  --vc-font-family: : "Noto Serif TC", serif;
-}
+  :deep(.vc-pane-layout) {
+    gap: 60px;
+  }
 
-.date-picker :deep(.vc-pane-layout) {
-  gap: 60px;
-}
+  :deep(.vc-header) {
+    margin-bottom: 4px;
+  }
 
-.date-picker :deep(.vc-header) {
-  margin-bottom: 4px;
-}
+  :deep(.vc-title) {
+    background-color: transparent;
+    color: #000000;
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
 
-.date-picker :deep(.vc-title) {
-  background-color: transparent;
-  color: #000000;
-  font-size: 1.25rem;
-  font-weight: bold;
-}
+  :deep(.vc-arrow) {
+    width: 24px;
+    height: 24px;
+    background-color: transparent;
+  }
 
-.date-picker :deep(.vc-arrow) {
-  width: 24px;
-  height: 24px;
-  background-color: transparent;
-}
+  :deep(.vc-base-icon) {
+    width: 12px;
+    stroke: #000;
+  }
 
-.date-picker :deep(.vc-base-icon) {
-  width: 12px;
-  stroke: #000;
-}
+  :deep(.vc-weeks) {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0;
+  }
 
-.date-picker :deep(.vc-weeks) {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+  :deep(.vc-weekday) {
+    --vc-weekday-color: #4B4B4B;
+    font-size: var(--vc-text-base);
+    font-weight: 500;
+    padding: 12px 14px 8px 14px;
+    line-height: unset;
+  }
 
-.date-picker :deep(.vc-weeks) {
-  padding: 0;
-}
+  :deep(.vc-day-content),
+  :deep(.vc-highlight) {
+    width: 44px;
+    height: 44px;
+  }
 
-.date-picker :deep(.vc-weekday) {
-  --vc-weekday-color: #4B4B4B;
-  font-size: var(--vc-text-base);
-  font-weight: 500;
-  padding: 12px 14px 8px 14px;
-  line-height: unset;
-}
+  :deep(.vc-day-content) {
+    font-size: var(--vc-text-base);
+  }
 
-.date-picker :deep(.vc-day-content) {
-  font-size: var(--vc-text-base);
-  width: 44px;
-  height: 44px;
-}
-
-.date-picker :deep(.vc-highlight) {
-  width: 44px;
-  height: 44px;
-}
-
-.date-picker :deep(.vc-attr) {
-  --vc-highlight-outline-bg: #000000;
+  :deep(.vc-attr) {
+    --vc-highlight-outline-bg: #000000;
+  }
 }
 </style>
