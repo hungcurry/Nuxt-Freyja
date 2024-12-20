@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { Modal as ModalInstance } from 'bootstrap'
 import { Icon } from '@iconify/vue'
 import { DatePicker } from 'v-calendar'
 import { useScreens } from 'vue-screen-utils'
@@ -13,27 +12,26 @@ const props = defineProps({
   },
 })
 const emit = defineEmits(['handleDateChange'])
-
+// -------------------
 // Modal 相關
-const { $bootstrap } = useNuxtApp()
-const modal = ref<ModalInstance | null>(null)
+const { $ModalInstance } = useNuxtApp()
+const modalRef = useTemplateRef('modalRef')
+let modal: { show: () => void, hide: () => void }
 
 function openModal() {
-  modal.value?.show()
+  modal?.show()
 }
 function closeModal() {
-  modal.value?.hide()
+  modal?.hide()
 }
 defineExpose({
   openModal,
   closeModal,
 })
 onMounted(() => {
-  const dateModalEl = document.getElementById('dateModal')
-  if (dateModalEl && $bootstrap)
-    modal.value = new ($bootstrap as any).Modal(dateModalEl)
+  modal = $ModalInstance(modalRef.value, { keyboard: false })
 })
-// ----------------------------------------
+// -------------------
 // 日期選擇相關
 const MAX_BOOKING_PEOPLE = 10
 const bookingPeopleMobile = ref(1)
@@ -67,7 +65,6 @@ const daysCount = computed(() => {
   const differenceTime = new Date(end).getTime() - new Date(start).getTime()
   return Math.round(differenceTime / (1000 * 60 * 60 * 24))
 })
-
 // 工具函數
 function formatDateTitle(date?: string) {
   return date?.replaceAll('-', ' / ')
@@ -80,7 +77,7 @@ function confirmDate() {
   const isMobile = mapCurrent({ md: false }, true)
   const dateData = {
     date: tempDate.date,
-    daysCount,
+    daysCount: daysCount.value,
   }
 
   if (isMobile.value) {
@@ -104,7 +101,7 @@ function clearDate() {
 
 <template>
   <div
-    id="dateModal"
+    ref="modalRef"
     class="modal fade"
     tabindex="-1"
     aria-hidden="true"

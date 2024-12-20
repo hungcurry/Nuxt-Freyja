@@ -95,6 +95,9 @@ export default defineNuxtConfig({
   imports: {
     dirs: ['stores'],
   },
+  pinia: {
+    storesDirs: ['./stores/**'],
+  },
   eslint: {
     config: {
       standalone: false,

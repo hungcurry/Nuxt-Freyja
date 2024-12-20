@@ -5,49 +5,64 @@ definePageMeta({
   name: 'room-detail',
 })
 
-const MAX_BOOKING_PEOPLE = 10
-const bookingPeople = ref(1)
-const daysCount = ref(0)
+const { todayDate, nextYearDate, formatDateOnMobile } = useDateRange()
+const bookingStore = useBookingStore()
+const { setBookingInfo } = bookingStore
 
-// 預訂日期相關資料
-const datePickerModal = useTemplateRef('datePickerModal')
-const currentDate = new Date()
+const datePickerRef = useTemplateRef('datePickerRef')
+const isDisabled = ref(true)
+const route = useRoute()
+const roomId = route.params.roomId
+const MAX_BOOKING_PEOPLE = 10
+const daysCount = ref(0)
+const bookingPeople = ref(1)
 const bookingDate = ref({
   date: {
-    start: formatDate(currentDate), // 入住日期
+    start: todayDate,
     end: null, // 退房日期
   },
-  minDate: new Date(), // 最小可選日期(今天)
-  maxDate: new Date(currentDate.setFullYear(currentDate.getFullYear() + 1)), // 最大可選日期(一年後)
+  // 最小可選日期(今天)
+  minDate: todayDate,
+  // 最大可選日期(一年後)
+  maxDate: nextYearDate,
 })
-// 開啟日期選擇器 modal
+
 function openModal() {
-  datePickerModal.value?.openModal()
+  datePickerRef.value?.openModal()
 }
-// 日期格式化函式 (YYYY-MM-DD)
-function formatDate(date: Date) {
-  const offsetToUTC8 = date.getHours() + 8 // 調整為 UTC+8 時區
-  date.setHours(offsetToUTC8)
-  return date.toISOString().split('T')[0]
-}
-// 手機版日期格式化函式 (MM/DD)
-function daysFormatOnMobile(date?: string) {
-  return date?.split('-').slice(1, 3).join(' / ')
-}
-// 處理日期變更
-function handleDateChange(bookingInfo: any) {
+function emitDateChange(bookingInfo: any) {
   const { start, end } = bookingInfo.date
   bookingDate.value.date.start = start
   bookingDate.value.date.end = end
 
   bookingPeople.value = bookingInfo?.people || 1
   daysCount.value = bookingInfo.daysCount
+
+  isDisabled.value = false
+}
+function takeReservation() {
+  if (isDisabled.value)
+    return
+  // const roomId = room.value?._id
+  setBookingInfo({
+    roomId: String(roomId),
+    checkInDate: bookingDate.value.date.start,
+    checkOutDate: bookingDate.value.date.end || '',
+    bookingDays: daysCount.value,
+    peopleNum: bookingPeople.value,
+  })
+  console.log('bookingInfo', bookingStore.bookingInfo)
+
+  // handleReservation()
+}
+function handleReservation() {
+  navigateTo(`/rooms/${roomId}/booking`)
 }
 </script>
 
 <template>
   <main class="mt-18 mt-md-30 bg-neutral-100">
-    <section class="p-md-20 bg-primary-10">
+    <section class="imageGroup p-md-20 bg-primary-10">
       <div class="d-none d-md-block position-relative">
         <div class="d-flex gap-2 rounded-3xl overflow-hidden">
           <div style="width: 52.5vw;">
@@ -111,10 +126,10 @@ function handleDateChange(bookingInfo: any) {
       </div>
     </section>
 
-    <section class="py-10 py-md-30 bg-primary-10">
+    <section class="schedule py-10 py-md-30 bg-primary-10">
       <div class="container">
         <div class="row">
-          <div class="col-12 col-md-7 d-flex flex-column gap-6 gap-md-20">
+          <div class="roomInfo col-12 col-md-7 d-flex flex-column gap-6 gap-md-20">
             <div>
               <h1 class="mb-4 text-neutral-100 fw-bold">
                 尊爵雙人房
@@ -426,7 +441,8 @@ function handleDateChange(bookingInfo: any) {
               </ol>
             </section>
           </div>
-          <div class="d-none d-md-block col-md-5">
+
+          <div class="roomcheck col-md-5 d-none d-md-block">
             <div
               class="rounded-3xl position-sticky d-flex flex-column gap-10 p-10 ms-auto bg-neutral-0"
               style="top: 160px; max-width: 478px;"
@@ -444,7 +460,7 @@ function handleDateChange(bookingInfo: any) {
                 </p>
               </div>
 
-              <div>
+              <div class="roomCheckForm">
                 <div class="d-flex flex-wrap gap-2 mb-4">
                   <div class="form-floating flex-grow-1 flex-shrink-1">
                     <input
@@ -512,11 +528,7 @@ function handleDateChange(bookingInfo: any) {
                     </h6>
 
                     <button
-                      :class="{
-                        'disabled bg-neutral-40':
-                          bookingPeople
-                          === MAX_BOOKING_PEOPLE,
-                      }"
+                      :class="{ 'disabled bg-neutral-40': bookingPeople === MAX_BOOKING_PEOPLE }"
                       class="btn btn-neutral-0 p-4 border border-neutral-40 rounded-circle"
                       type="button"
                       @click="bookingPeople++"
@@ -528,14 +540,22 @@ function handleDateChange(bookingInfo: any) {
                     </button>
                   </div>
                 </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-10">
+                  <h5 class="mb-0 text-primary-100 fw-bold">
+                    NT$ 10,000
+                  </h5>
+                  <p class="mb-0 text-neutral-80 fw-medium">
+                    {{ daysCount }}晚
+                  </p>
+                </div>
               </div>
 
-              <h5 class="mb-0 text-primary-100 fw-bold">
-                NT$ 10,000
-              </h5>
               <NuxtLink
-                :to="{ name: 'booking', params: { roomId: $route.params.roomId } }"
                 class="btn btn-primary-100 py-4 text-neutral-0 fw-bold rounded-3"
+                :disabled="isDisabled"
+                :class="{ 'opacity-50 cursor-not-allowed': isDisabled }"
+                @click="takeReservation"
               >
                 立即預訂
               </NuxtLink>
@@ -559,7 +579,7 @@ function handleDateChange(bookingInfo: any) {
         <template v-else>
           <div class="d-flex flex-column gap-1">
             <small class="text-neutral-80 fw-medium">ＮＴ$ 10,000 / {{ daysCount }} 晚 / {{ bookingPeople }} 人</small>
-            <span class="text-neutral fs-9 fw-medium text-decoration-underline">{{ daysFormatOnMobile(bookingDate.date?.start) }} - {{ daysFormatOnMobile(bookingDate.date?.end) }}</span>
+            <span class="text-neutral fs-9 fw-medium text-decoration-underline">{{ formatDateOnMobile(bookingDate.date?.start) }} - {{ formatDateOnMobile(bookingDate.date?.end) }}</span>
           </div>
           <NuxtLink
             :to="{ name: 'booking', params: { roomId: $route.params.roomId } }"
@@ -573,9 +593,9 @@ function handleDateChange(bookingInfo: any) {
 
     <ClientOnly>
       <RoomsDatePickerModal
-        ref="datePickerModal"
+        ref="datePickerRef"
         :date-time="bookingDate"
-        @handle-date-change="handleDateChange"
+        @handle-date-change="emitDateChange"
       />
     </ClientOnly>
   </main>

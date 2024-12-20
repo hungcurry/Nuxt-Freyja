@@ -38,5 +38,8 @@
     "sass": "1.77.6",
     "typescript": "^5.6.3",
     "unocss": "^0.64.1"
+  },
+  "overrides": {
+    "vue": "latest"
   }
 }
