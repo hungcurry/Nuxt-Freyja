@@ -21,6 +21,12 @@ export function useDateRange() {
     const timestamp = date.getTime() + timezoneOffset * 60 * 60 * 1000
     return new Date(timestamp).toISOString().split('T')[0]
   }
+
+  // 日期格式化 (YYYY/MM/DD)
+  function formatDateTitle(date?: string) {
+    return date?.replaceAll('-', ' / ')
+  }
+
   // 手機版日期格式化 (MM/DD)
   const formatDateOnMobile = (dateString: string) => {
     const [, month, day] = dateString.split('-')
@@ -32,6 +38,7 @@ export function useDateRange() {
     tommorowDate,
     nextYearDate,
     formatDate,
+    formatDateTitle,
     formatDateOnMobile,
   }
 }

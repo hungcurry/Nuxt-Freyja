@@ -5,7 +5,7 @@ type TRoomFeature = {
 }
 // 預訂結果類型
 type TBookingInfo = {
-  roomId?: string
+  roomId?: string | string[]
   checkInDate?: string
   checkOutDate?: string
   bookingDays?: number

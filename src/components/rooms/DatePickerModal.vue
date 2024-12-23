@@ -1,17 +1,28 @@
 <script setup lang="ts">
+import type { TPropsBookingDate } from '@/types/propTypes'
 import { Icon } from '@iconify/vue'
 import { DatePicker } from 'v-calendar'
 import { useScreens } from 'vue-screen-utils'
 import 'v-calendar/style.css'
 
-// Props & Emits
+// #region Props & Emits
 const props = defineProps({
   dateTime: {
     type: Object,
     required: true,
   },
 })
+// const {
+//   date,
+//   minDate,
+//   maxDate,
+// } = defineProps<TPropsBookingDate>()
+
 const emit = defineEmits(['handleDateChange'])
+// const emit = defineEmits<{
+//   handleDateChange: [bookingInfo: any]
+// }>()
+// #endregion
 // -------------------
 // Modal 相關
 const { $ModalInstance } = useNuxtApp()
@@ -33,10 +44,11 @@ onMounted(() => {
 })
 // -------------------
 // 日期選擇相關
+const { formatDateTitle } = useDateRange()
 const MAX_BOOKING_PEOPLE = 10
 const bookingPeopleMobile = ref(1)
 const isConfirmDateOnMobile = ref(false)
-const tempDate = reactive({
+const tempDate = ref({
   date: {
     start: props.dateTime.date.start,
     end: props.dateTime.date.end,
@@ -49,53 +61,47 @@ const masks = {
   title: 'YYYY 年 MM 月',
   modelValue: 'YYYY-MM-DD',
 }
-
 // 響應式設定
 const { mapCurrent } = useScreens({ md: '768px' })
 const rows = mapCurrent({ md: 1 }, 2)
 const columns = mapCurrent({ md: 2 }, 1)
 const expanded = mapCurrent({ md: false }, true)
 const titlePosition = mapCurrent({ md: 'center' }, 'left')
-// 計算天數
 const daysCount = computed(() => {
-  const { start, end } = tempDate.date
+  const { start, end } = tempDate.value.date
   if (!start || !end)
     return 0
 
   const differenceTime = new Date(end).getTime() - new Date(start).getTime()
   return Math.round(differenceTime / (1000 * 60 * 60 * 24))
 })
-// 工具函數
-function formatDateTitle(date?: string) {
-  return date?.replaceAll('-', ' / ')
-}
-// 操作函數
+
 function confirmDateOnMobile() {
   isConfirmDateOnMobile.value = true
 }
 function confirmDate() {
   const isMobile = mapCurrent({ md: false }, true)
-  const dateData = {
-    date: tempDate.date,
+  const bookingInfo = {
+    date: tempDate.value.date,
     daysCount: daysCount.value,
   }
 
   if (isMobile.value) {
     emit('handleDateChange', {
-      ...dateData,
-      people: bookingPeopleMobile,
+      ...bookingInfo,
+      people: bookingPeopleMobile.value,
     })
   }
   else {
-    emit('handleDateChange', dateData)
+    emit('handleDateChange', bookingInfo)
   }
 
   closeModal()
 }
 function clearDate() {
-  tempDate.date.start = null
-  tempDate.date.end = null
-  tempDate.key++
+  tempDate.value.date.start = null
+  tempDate.value.date.end = ''
+  tempDate.value.key++
 }
 </script>
 
@@ -112,7 +118,7 @@ function clearDate() {
         class="modal-content gap-6 gap-md-10 rounded-3xl"
       >
         <!-- Mobile Header -->
-        <div class="d-md-none modal-header px-6 py-4 bg-neutral-40">
+        <div class="modal-header px-6 py-4 bg-neutral-40">
           <div class="d-flex flex-column gap-4">
             <button
               type="button"
@@ -196,27 +202,26 @@ function clearDate() {
 
         <!-- Modal Body -->
         <div class="modal-body px-6 px-md-8 py-0">
-          <div
-            v-if="!isConfirmDateOnMobile"
-            class="date-picker"
-          >
-            <DatePicker
-              :key="tempDate.key"
-              v-model.range.string="tempDate.date"
-              color="primary"
-              :masks="masks"
-              :first-day-of-week="1"
-              :min-date="tempDate.minDate"
-              :max-date="tempDate.maxDate"
-              :rows="rows"
-              :columns="columns"
-              :expanded="expanded"
-              :title-position="titlePosition"
-              class="border-0"
-            />
-          </div>
+          <template v-if="!isConfirmDateOnMobile">
+            <div class="date-picker">
+              <DatePicker
+                :key="tempDate.key"
+                v-model.range.string="tempDate.date"
+                color="primary"
+                :masks="masks"
+                :first-day-of-week="1"
+                :min-date="tempDate.minDate"
+                :max-date="tempDate.maxDate"
+                :rows="rows"
+                :columns="columns"
+                :expanded="expanded"
+                :title-position="titlePosition"
+                class="border-0"
+              />
+            </div>
+          </template>
 
-          <div v-else>
+          <template v-else>
             <h6 class="mb-1 text-neutral-100 fw-bold">
               選擇人數
             </h6>
@@ -260,7 +265,7 @@ function clearDate() {
                 />
               </button>
             </div>
-          </div>
+          </template>
         </div>
 
         <!-- Desktop Footer -->
@@ -299,6 +304,7 @@ function clearDate() {
               儲存
             </button>
           </template>
+
           <template v-else>
             <button
               type="button"
