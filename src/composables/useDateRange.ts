@@ -33,6 +33,17 @@ export function useDateRange() {
     return `${month} / ${day}`
   }
 
+  // 取得日期星期幾
+  const formatDateWeekday = (dateString: string) => {
+    const date = new Date(dateString)
+    const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    const day = date.getDate()
+    const weekday = weekdays[date.getDay()]
+    return `${month} 月 ${day} 日 ${weekday}`
+  }
+
   return {
     todayDate,
     tommorowDate,
@@ -40,5 +51,6 @@ export function useDateRange() {
     formatDate,
     formatDateTitle,
     formatDateOnMobile,
+    formatDateWeekday,
   }
 }

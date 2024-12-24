@@ -1,20 +1,27 @@
-import type { TBookingInfo, TBookingResult } from '@/types/dataTypes'
+import type { TApiRoomItem } from '@/types/apiTypes'
+import type { TBookingInfo, TOrderResult } from '@/types/dataTypes'
 
 export const BookingStore = defineStore('booking', () => {
   const bookingInfo = ref<TBookingInfo | null>(null)
-  const bookingResult = ref<TBookingResult | null>(null)
+  const roomInfo = ref<TApiRoomItem | null>(null)
+  const bookingResult = ref<TOrderResult | null>(null)
 
   const setBookingInfo = (info: TBookingInfo) => {
     bookingInfo.value = info
   }
-  const setBookingResult = (info: TBookingResult) => {
+  const setRoomInfo = (info: TApiRoomItem) => {
+    roomInfo.value = info
+  }
+  const setOrderResult = (info: TOrderResult) => {
     bookingResult.value = info
   }
 
   return {
     bookingInfo,
     bookingResult,
+    roomInfo,
     setBookingInfo,
-    setBookingResult,
+    setOrderResult,
+    setRoomInfo,
   }
 })

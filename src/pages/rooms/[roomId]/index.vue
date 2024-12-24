@@ -8,7 +8,7 @@ definePageMeta({
 
 const bookingStore = useBookingStore()
 const { todayDate, nextYearDate, formatDateOnMobile } = useDateRange()
-const { setBookingInfo } = bookingStore
+const { setBookingInfo, setRoomInfo } = bookingStore
 const datePickerRef = useTemplateRef('datePickerRef')
 const isDisabled = ref(true)
 const route = useRoute()
@@ -44,6 +44,7 @@ const { data: room } = await useFetch(`/rooms/${roomId}`, {
 if (room.value) {
   MAX_BOOKING_PEOPLE.value = room.value.maxPeople
   bookingDate.value.maxPeople = room.value.maxPeople
+  setRoomInfo(room.value)
 }
 
 function openModal() {

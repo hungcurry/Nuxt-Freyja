@@ -11,7 +11,7 @@ type TBookingInfo = {
   bookingDays?: number
   peopleNum?: number
 }
-type TBookingResult = {
+type TOrderResult = {
   userInfo?: {
     name?: string
     phone?: string
@@ -74,10 +74,10 @@ type TTodo = {
 }
 export type {
   TBookingInfo,
-  TBookingResult,
   TFrameworks,
   TLoginForm,
   TMenuItem,
+  TOrderResult,
   TRegistrationForm,
   TRoomFeature,
   TTodo,

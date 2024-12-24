@@ -107,5 +107,14 @@ export default defineNuxtConfig({
     ['@pinia/nuxt', { autoImports: ['defineStore', 'acceptHMRUpdate'] }],
     '@unocss/nuxt',
     '@nuxt/eslint',
+    '@vee-validate/nuxt',
   ],
+  veeValidate: {
+    // 修改 VeeValidate 元件的名稱
+    componentNames: {
+      Form: 'VForm',
+      Field: 'VField',
+      ErrorMessage: 'VErrorMessage',
+    },
+  },
 })
