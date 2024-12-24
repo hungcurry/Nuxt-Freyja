@@ -9,14 +9,13 @@ definePageMeta({
 const bookingStore = useBookingStore()
 const { todayDate, nextYearDate, formatDateOnMobile } = useDateRange()
 const { setBookingInfo } = bookingStore
-
 const datePickerRef = useTemplateRef('datePickerRef')
 const isDisabled = ref(true)
 const route = useRoute()
 const roomId = route.params.roomId
-const MAX_BOOKING_PEOPLE = 10
-const daysCount = ref(0)
+const MAX_BOOKING_PEOPLE = ref(10)
 const bookingPeople = ref(1)
+const daysCount = ref(0)
 const bookingDate = ref({
   date: {
     start: todayDate,
@@ -26,13 +25,14 @@ const bookingDate = ref({
   minDate: todayDate,
   // 最大可選日期(一年後)
   maxDate: nextYearDate,
+  maxPeople: MAX_BOOKING_PEOPLE.value,
 })
 // SSR
 const { data: room } = await useFetch(`/rooms/${roomId}`, {
   baseURL: 'https://nuxr3.zeabur.app/api/v1',
   transform: (response: TApiGenericResponse<TApiRoomItem>) => {
     const { result } = response
-    console.log('room', result)
+    // console.log('room', result)
     return result
   },
   onResponseError({ response }) {
@@ -41,6 +41,11 @@ const { data: room } = await useFetch(`/rooms/${roomId}`, {
     navigateTo('/')
   },
 })
+if (room.value) {
+  MAX_BOOKING_PEOPLE.value = room.value.maxPeople
+  bookingDate.value.maxPeople = room.value.maxPeople
+}
+
 function openModal() {
   datePickerRef.value?.openModal()
 }
@@ -80,7 +85,7 @@ function handleReservation() {
       <div class="mobile-image position-relative d-md-none">
         <img
           class="img-fluid"
-          :src="room.imageUrl"
+          :src="room?.imageUrl"
           alt="room-a-1"
         >
         <button
@@ -97,37 +102,37 @@ function handleReservation() {
           <div style="width: 52.5vw;">
             <img
               class="w-100"
-              :src="room.imageUrl"
+              :src="room?.imageUrl"
               alt="room-a-1"
             >
           </div>
 
           <div
-            v-if="room.imageUrlList"
+            v-if="room?.imageUrlList"
             class="imageUrlList d-flex flex-wrap gap-md-2"
             style="width: 42.5vw;"
           >
             <div class="d-flex gap-md-2">
               <img
                 class="w-50"
-                :src="room.imageUrlList[0]"
+                :src="room?.imageUrlList[0]"
                 alt="room-a-2"
               >
               <img
                 class="w-50"
-                :src="room.imageUrlList[1]"
+                :src="room?.imageUrlList[1]"
                 alt="room-a-3"
               >
             </div>
             <div class="d-flex gap-md-2">
               <img
                 class="w-50"
-                :src="room.imageUrlList[2]"
+                :src="room?.imageUrlList[2]"
                 alt="room-a-4"
               >
               <img
                 class="w-50"
-                :src="room.imageUrlList[3]"
+                :src="room?.imageUrlList[3]"
                 alt="room-a-5"
               >
             </div>
@@ -196,11 +201,11 @@ function handleReservation() {
                 房間格局
               </h3>
               <ul
-                v-if="room.layoutInfo"
+                v-if="room?.layoutInfo"
                 class="d-flex flex-wrap gap-6 gap-md-10 p-6 bg-neutral-0 fs-8 fs-md-7 rounded-3 list-unstyled"
               >
                 <li
-                  v-for="layout in room.layoutInfo"
+                  v-for="layout in room?.layoutInfo"
                   :key="layout.title"
                   class="d-flex gap-2"
                 >
@@ -220,11 +225,11 @@ function handleReservation() {
                 房內設備
               </h3>
               <ul
-                v-if="room.facilityInfo"
+                v-if="room?.facilityInfo"
                 class="d-flex flex-wrap row-gap-2 column-gap-10 p-6 mb-0 bg-neutral-0 fs-8 fs-md-7 rounded-3 list-unstyled"
               >
                 <li
-                  v-for="facility in room.facilityInfo"
+                  v-for="facility in room?.facilityInfo"
                   :key="facility.title"
                   class="flex-item d-flex gap-2"
                 >
@@ -244,7 +249,7 @@ function handleReservation() {
                 備品提供
               </h3>
               <ul
-                v-if="room.amenityInfo"
+                v-if="room?.amenityInfo"
                 class="d-flex flex-wrap row-gap-2 column-gap-10 p-6 mb-0 bg-neutral-0 fs-8 fs-md-7 rounded-3 list-unstyled"
               >
                 <li
@@ -293,10 +298,10 @@ function handleReservation() {
 
               <div class="text-neutral-80">
                 <h2 class="fw-bold">
-                  尊爵雙人房
+                  {{ room?.name || '雙人房' }}
                 </h2>
                 <p class="mb-0 fw-medium">
-                  享受高級的住宿體驗，尊爵雙人房提供給您舒適寬敞的空間和精緻的裝潢。
+                  {{ room?.description || '享受高級的住宿體驗' }}
                 </p>
               </div>
 
@@ -383,7 +388,7 @@ function handleReservation() {
 
                 <div class="d-flex justify-content-between align-items-center mt-10">
                   <h5 class="mb-0 text-primary-100 fw-bold">
-                    NT$ 10,000
+                    NT$ {{ room?.price || 0 }}
                   </h5>
                   <p class="mb-0 text-neutral-80 fw-medium">
                     {{ daysCount }}晚
@@ -434,7 +439,7 @@ function handleReservation() {
     <ClientOnly>
       <RoomsDatePickerModal
         ref="datePickerRef"
-        :date-time="bookingDate"
+        v-bind="bookingDate"
         @handle-date-change="emitDateChange"
       />
     </ClientOnly>

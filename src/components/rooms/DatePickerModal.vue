@@ -6,29 +6,28 @@ import { useScreens } from 'vue-screen-utils'
 import 'v-calendar/style.css'
 
 // #region Props & Emits
-const props = defineProps({
-  dateTime: {
-    type: Object,
-    required: true,
-  },
-})
-// const {
-//   date,
-//   minDate,
-//   maxDate,
-// } = defineProps<TPropsBookingDate>()
-
-const emit = defineEmits(['handleDateChange'])
-// const emit = defineEmits<{
-//   handleDateChange: [bookingInfo: any]
-// }>()
+// const props = defineProps({
+//   dateTime: {
+//     type: Object,
+//     required: true,
+//   },
+// })
+// const emit = defineEmits(['handleDateChange'])
 // #endregion
+const {
+  date,
+  minDate,
+  maxDate,
+  maxPeople,
+} = defineProps<TPropsBookingDate>()
+const emit = defineEmits<{
+  handleDateChange: [bookingInfo: any]
+}>()
 // -------------------
 // Modal 相關
 const { $ModalInstance } = useNuxtApp()
 const modalRef = useTemplateRef('modalRef')
 let modal: { show: () => void, hide: () => void }
-
 function openModal() {
   modal?.show()
 }
@@ -45,16 +44,16 @@ onMounted(() => {
 // -------------------
 // 日期選擇相關
 const { formatDateTitle } = useDateRange()
-const MAX_BOOKING_PEOPLE = 10
+const MAX_BOOKING_PEOPLE = ref(maxPeople)
 const bookingPeopleMobile = ref(1)
 const isConfirmDateOnMobile = ref(false)
 const tempDate = ref({
   date: {
-    start: props.dateTime.date.start,
-    end: props.dateTime.date.end,
+    start: date.start,
+    end: date.end as string,
   },
-  minDate: props.dateTime.minDate,
-  maxDate: props.dateTime.maxDate,
+  minDate,
+  maxDate,
   key: 0,
 })
 const masks = {
@@ -99,7 +98,7 @@ function confirmDate() {
   closeModal()
 }
 function clearDate() {
-  tempDate.value.date.start = null
+  tempDate.value.date.start = ''
   tempDate.value.date.end = ''
   tempDate.value.key++
 }
@@ -118,7 +117,7 @@ function clearDate() {
         class="modal-content gap-6 gap-md-10 rounded-3xl"
       >
         <!-- Mobile Header -->
-        <div class="modal-header px-6 py-4 bg-neutral-40">
+        <div class="d-md-none modal-header px-6 py-4 bg-neutral-40">
           <div class="d-flex flex-column gap-4">
             <button
               type="button"

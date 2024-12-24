@@ -5,5 +5,6 @@ type TPropsBookingDate = {
   }
   minDate: string
   maxDate: string
+  maxPeople: number
 }
 export type { TPropsBookingDate }
