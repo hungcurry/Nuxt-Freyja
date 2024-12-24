@@ -108,6 +108,7 @@ export default defineNuxtConfig({
     '@unocss/nuxt',
     '@nuxt/eslint',
     '@vee-validate/nuxt',
+    'nuxt3-notifications',
   ],
   veeValidate: {
     // 修改 VeeValidate 元件的名稱

@@ -9,9 +9,6 @@ definePageMeta({
 })
 
 const bookingStore = useBookingStore()
-const { setOrderResult } = bookingStore
-const { roomInfo, bookingInfo } = storeToRefs(bookingStore)
-const { formatDateWeekday } = useDateRange()
 const submitButtonRef = useTemplateRef('submitButtonRef')
 const router = useRouter()
 const route = useRoute()
@@ -28,10 +25,13 @@ const userInfo = ref<TUser>({
   phone: '',
   email: '',
 })
-// if (!bookingInfo.value) {
-//   console.log('out')
-//   navigateTo('/')
-// }
+const { setOrderResult } = bookingStore
+const { roomInfo, bookingInfo } = storeToRefs(bookingStore)
+const { formatDateWeekday } = useDateRange()
+const { notifyWarn, notifySuccess } = useNotifications()
+if (!bookingInfo.value) {
+  navigateTo('/')
+}
 
 const discountPrice = computed(() => {
   const price = roomInfo.value?.price
@@ -64,12 +64,18 @@ function resetUserForm() {
   }
 }
 function submitOrder() {
-  console.log('有資料沒填寫')
+  // 檢查必填欄位
+  if (!userInfo.value.name || !userInfo.value.phone
+    || !userInfo.value.email || !userInfo.value.address.county
+    || !userInfo.value.address.district || !userInfo.value.address.detail) {
+    notifyWarn('警告', '請填寫完所有必填欄位')
+    return
+  }
+
   if (submitButtonRef.value) {
     submitButtonRef.value.click()
   }
 }
-// 建立訂單
 async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
   try {
     isLoading.value = true
@@ -120,6 +126,8 @@ async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
       },
     }
     console.log('orderData', orderData)
+
+    notifySuccess('成功', '訂單建立成功')
 
     // 清空表單並導向確認頁
     // const { result } = await $fetch<TApiGenericResponse<any>>('/api/v1/orders/', {

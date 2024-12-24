@@ -3,6 +3,7 @@
 <template>
   <div id="id">
     <!-- <NuxtRouteAnnouncer /> -->
+    <NuxtNotifications position="bottom right" :speed="500" />
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>

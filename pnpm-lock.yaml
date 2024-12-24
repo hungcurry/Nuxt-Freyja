@@ -41,6 +41,9 @@ dependencies:
   nuxt:
     specifier: ^3.14.1592
     version: 3.14.1592(eslint@9.17.0)(sass@1.77.6)(typescript@5.7.2)(vite@5.4.11)(vue-tsc@2.1.10)
+  nuxt3-notifications:
+    specifier: ^1.2.3
+    version: 1.2.3(@nuxt/kit@3.14.1592)(vue@3.5.13)
   pinia:
     specifier: ^2.3.0
     version: 2.3.0(typescript@5.7.2)(vue@3.5.13)
@@ -1373,6 +1376,14 @@ packages:
     resolution: {integrity: sha512-GaHYm+c0O9MjZRu0ongGBRbinu8gVAMd2UZjji6jVmqKtZluZnptXGWhz1E8j8D2HJ3f/yMxKAUC0b+57wncIw==}
     dev: false
 
+  /@kyvg/vue3-notification@3.4.1(vue@3.5.13):
+    resolution: {integrity: sha512-WhTWCbF36JHLJR5UdKmJF7KXGOGVy4tLeaJuKTHZhwttZWnbF9w1/c2d32tvCSwY9CdeX/n9uoaKWLMKK3vOyg==}
+    peerDependencies:
+      vue: ^3.0.0
+    dependencies:
+      vue: 3.5.13(typescript@5.7.2)
+    dev: false
+
   /@mapbox/node-pre-gyp@2.0.0-rc.0:
     resolution: {integrity: sha512-nhSMNprz3WmeRvd8iUs5JqkKr0Ncx46JtPxM3AhXes84XpSJfmIwKeWXRpsr53S7kqPkQfPhzrMFUxSNb23qSA==}
     engines: {node: '>=18'}
@@ -1859,6 +1870,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.8
+      napi-wasm: 1.1.3
     dev: false
     bundledDependencies:
       - napi-wasm
@@ -6224,6 +6236,10 @@ packages:
     resolution: {integrity: sha512-AiJsGsSF3O0havL1BydvI4+wR76sKT+okKRwWIaK96cZUnXqH0uNBOsHlbwZq3+m2BR1VKqHDVudl3gO4mYjpQ==}
     dev: false
 
+  /napi-wasm@1.1.3:
+    resolution: {integrity: sha512-h/4nMGsHjZDCYmQVNODIrYACVJ+I9KItbG+0si6W/jSjdA9JbWDoU4LLeMXVcEQGHjttI2tuXqDrbGF7qkUHHg==}
+    dev: false
+
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -6420,6 +6436,20 @@ packages:
     resolution: {integrity: sha512-JDVtBBwEe9VjVkhxwR/crtGJnyLHzvl2F1pjtglekjTVeiMThfhQHcvsI/u007gBAfPpmaCIdRGnoeTF4VKS8w==}
     engines: {node: ^16.10.0 || >=18.0.0}
     hasBin: true
+    dev: false
+
+  /nuxt3-notifications@1.2.3(@nuxt/kit@3.14.1592)(vue@3.5.13):
+    resolution: {integrity: sha512-kDtHoL+8eFB6DgjPU/SYSwzZx5bDl1gRM60DHfvzAUgC7noBRkIuqUS5JNGczwQvusSJKR12y35ARJwUsC2gfA==}
+    engines: {node: '>= 14.20.0'}
+    peerDependencies:
+      '@nuxt/kit': ^3.0.0
+    dependencies:
+      '@kyvg/vue3-notification': 3.4.1(vue@3.5.13)
+      '@nuxt/kit': 3.14.1592(magicast@0.3.5)
+      defu: 6.1.4
+      scule: 1.3.0
+    transitivePeerDependencies:
+      - vue
     dev: false
 
   /nuxt@3.14.1592(eslint@9.17.0)(sass@1.77.6)(typescript@5.7.2)(vite@5.4.11)(vue-tsc@2.1.10):

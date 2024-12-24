@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const route = useRoute()
 </script>
 
 <template>
@@ -38,7 +39,7 @@
               :to="{
                 name: 'user-profile',
                 params: {
-                  userId: $route.params.userId,
+                  userId: route.params.userId,
                 },
               }"
               exact-active-class="text-primary-100"
@@ -52,7 +53,7 @@
               :to="{
                 name: 'user-order',
                 params: {
-                  userId: $route.params.userId,
+                  userId: route.params.userId,
                 },
               }"
               exact-active-class="text-primary-100"
