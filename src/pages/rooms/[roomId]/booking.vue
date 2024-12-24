@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { TApiGenericResponse, TApiRoomItem } from '@/types/apiTypes'
+import type { TUser } from '@/types/dataTypes'
+import { cityList, ZipCodeMap } from '@/utils/zipcodes'
 import { Icon } from '@iconify/vue'
 
 definePageMeta({
@@ -9,9 +12,22 @@ const bookingStore = useBookingStore()
 const { setOrderResult } = bookingStore
 const { roomInfo, bookingInfo } = storeToRefs(bookingStore)
 const { formatDateWeekday } = useDateRange()
-// const submitButtonRef = useTemplateRef('submitButton')
+const submitButtonRef = useTemplateRef('submitButtonRef')
 const router = useRouter()
+const route = useRoute()
+const roomId = route.params.id
 const isLoading = ref(false)
+const userInfo = ref<TUser>({
+  address: {
+    zipcode: '',
+    county: '',
+    district: '',
+    detail: '',
+  },
+  name: '',
+  phone: '',
+  email: '',
+})
 // if (!bookingInfo.value) {
 //   console.log('out')
 //   navigateTo('/')
@@ -26,22 +42,106 @@ const discountPrice = computed(() => {
 const totalPrice = computed(() => {
   return (roomInfo.value?.price || 0) * (bookingInfo.value?.bookingDays || 0) - discountPrice.value
 })
+const districtList = computed(() => {
+  const city = ZipCodeMap.find(city => city.name === userInfo.value.address.county)
+  return city?.districts
+})
 
 function goBack() {
   router.back()
 }
-function confirmBooking() {
-  isLoading.value = true
+function resetUserForm() {
+  userInfo.value = {
+    address: {
+      zipcode: '',
+      county: '',
+      district: '',
+      detail: '',
+    },
+    name: '',
+    phone: '',
+    email: '',
+  }
+}
+function submitOrder() {
+  console.log('有資料沒填寫')
+  if (submitButtonRef.value) {
+    submitButtonRef.value.click()
+  }
+}
+// 建立訂單
+async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
+  try {
+    isLoading.value = true
 
-  setTimeout(() => {
-    isLoading.value = false
-    router.push({
-      name: 'confirm-detail',
-      params: {
-        orderId: 'HH2302183151222',
+    // 取得認證 cookie
+    const cookie = useCookie('Freyja-auth')
+
+    // 設定郵遞區號
+    if (districtList.value?.length) {
+      userInfo.address.zipcode = districtList.value[0].zip
+    }
+    if (totalPrice.value) {
+      roomInfo.totalPrice = totalPrice.value
+    }
+    // 組合地址
+    const fullAddress = `${userInfo.address.county}${userInfo.address.district}${userInfo.address.detail}`
+
+    // 設定訂房結果
+    const bookingResultData = {
+      ...roomInfo,
+      userInfo: {
+        name: userInfo.name,
+        phone: userInfo.phone,
+        email: userInfo.email,
+        address: {
+          zipcode: String(userInfo.address.zipcode),
+          detail: fullAddress,
+        },
       },
-    })
-  }, 1500)
+    }
+    console.log('bookingResultData', bookingResultData)
+    setOrderResult(bookingResultData)
+
+    // 建立訂單資料
+    const orderData = {
+      roomId: roomInfo._id,
+      checkInDate: bookingInfo.value?.checkInDate,
+      checkOutDate: bookingInfo.value?.checkOutDate,
+      peopleNum: bookingInfo.value?.peopleNum,
+      userInfo: {
+        name: userInfo.name,
+        phone: userInfo.phone,
+        email: userInfo.email,
+        address: {
+          zipcode: String(userInfo.address.zipcode),
+          detail: fullAddress,
+        },
+      },
+    }
+    console.log('orderData', orderData)
+
+    // 清空表單並導向確認頁
+    // const { result } = await $fetch<TApiGenericResponse<any>>('/api/v1/orders/', {
+    //   baseURL: 'https://nuxr3.zeabur.app',
+    //   method: 'POST',
+    //   body: orderData,
+    //   headers: cookie.value ? { Authorization: cookie.value } : undefined,
+    // })
+    // 清空表單並導向確認頁
+    // navigateTo('/confirm')
+    // return result._id
+
+    setTimeout(() => {
+      isLoading.value = false
+      resetUserForm()
+      navigateTo(`/confirm/${roomId}`)
+    }, 1500)
+  }
+  catch (error) {
+    console.error('建立訂單失敗:', error)
+    throw error
+  }
 }
 </script>
 
@@ -141,91 +241,106 @@ function confirmBooking() {
               </div>
 
               <div class="d-flex flex-column gap-6">
-                <div class="text-neutral-100">
-                  <label
-                    for="name"
-                    class="form-label fs-8 fs-md-7 fw-bold"
-                  >姓名</label>
-                  <input
-                    id="name"
-                    type="text"
-                    class="form-control p-4 fs-8 fs-md-7 rounded-3"
-                    placeholder="請輸入姓名"
-                  >
-                </div>
-
-                <div class="text-neutral-100">
-                  <label
-                    for="phone"
-                    class="form-label fs-8 fs-md-7 fw-bold"
-                  >手機號碼</label>
-                  <input
-                    id="phone"
-                    type="tel"
-                    class="form-control p-4 fs-8 fs-md-7 rounded-3"
-                    placeholder="請輸入手機號碼"
-                  >
-                </div>
-
-                <div class="text-neutral-100">
-                  <label
-                    for="email"
-                    class="form-label fs-8 fs-md-7 fw-bold"
-                  >電子信箱</label>
-                  <input
-                    id="email"
-                    type="email"
-                    class="form-control p-4 fs-8 fs-md-7 rounded-3"
-                    placeholder="請輸入電子信箱"
-                  >
-                </div>
-
-                <div class="text-neutral-100">
-                  <label
-                    for="address"
-                    class="form-label fs-8 fs-md-7 fw-bold"
-                  >地址</label>
-                  <div class="d-flex gap-2 mb-4">
-                    <select
-                      class="form-select w-50 p-4 text-neutral-80 fs-8 fs-md-7 fw-medium rounded-3"
-                    >
-                      <option value="臺北市">
-                        臺北市
-                      </option>
-                      <option value="臺中市">
-                        臺中市
-                      </option>
-                      <option
-                        selected
-                        value="高雄市"
-                      >
-                        高雄市
-                      </option>
-                    </select>
-                    <select
-                      class="form-select w-50 p-4 text-neutral-80 fs-8 fs-md-7 fw-medium rounded-3"
-                    >
-                      <option value="前金區">
-                        前金區
-                      </option>
-                      <option value="鹽埕區">
-                        鹽埕區
-                      </option>
-                      <option
-                        selected
-                        value="新興區"
-                      >
-                        新興區
-                      </option>
-                    </select>
+                <VForm v-slot="{ errors, meta }" class="d-flex flex-column gap-6" @submit="createOrder(roomInfo, userInfo)">
+                  <div class="mb-3">
+                    <label for="name" class="form-label fs-8 fs-md-7 fw-bold">姓名</label>
+                    <VField
+                      id="name"
+                      v-model="userInfo.name"
+                      name="姓名"
+                      rules="required|min:2"
+                      type="text"
+                      class="form-control rounded-3"
+                      :class="{ 'is-invalid': errors['姓名'] }"
+                      placeholder="請輸入姓名"
+                    />
+                    <VErrorMessage name="姓名" class="invalid-feedback" />
                   </div>
-                  <input
-                    id="address"
-                    type="text"
-                    class="form-control p-4 fs-8 fs-md-7 rounded-3"
-                    placeholder="請輸入詳細地址"
-                  >
-                </div>
+                  <div class="mb-3">
+                    <label for="phone" class="form-label fs-8 fs-md-7 fw-bold">手機號碼</label>
+                    <VField
+                      id="phone"
+                      v-model="userInfo.phone"
+                      name="手機號碼"
+                      rules="required|phone"
+                      type="tel"
+                      class="form-control rounded-3"
+                      :class="{ 'is-invalid': errors['手機號碼'] }"
+                      placeholder="請輸入手機號碼"
+                    />
+                    <VErrorMessage name="手機號碼" class="invalid-feedback" />
+                  </div>
+                  <div class="mb-3">
+                    <label for="email" class="form-label fs-8 fs-md-7 fw-bold">電子信箱</label>
+                    <VField
+                      id="email"
+                      v-model="userInfo.email"
+                      name="電子信箱"
+                      rules="required|email"
+                      type="email"
+                      class="form-control rounded-3"
+                      :class="{ 'is-invalid': errors['電子信箱'] }"
+                      placeholder="請輸入電子信箱"
+                    />
+                    <VErrorMessage name="電子信箱" class="invalid-feedback" />
+                  </div>
+                  <div class="mb-3">
+                    <label for="road" class="form-label fs-8 fs-md-7 fw-bold">地址</label>
+                    <div class="d-flex gap-2 mb-4">
+                      <VField
+                        v-model="userInfo.address.county"
+                        name="縣市"
+                        rules="required"
+                        as="select"
+                        class="form-select"
+                        :class="{ 'is-invalid': errors['縣市'] }"
+                      >
+                        <option selected disabled>
+                          請選擇縣市
+                        </option>
+                        <option v-for="city in cityList" :key="city" :value="city">
+                          {{ city }}
+                        </option>
+                      </VField>
+                      <VField
+                        v-model="userInfo.address.district"
+                        name="行政區"
+                        rules="required"
+                        as="select"
+                        class="form-select"
+                        :class="{ 'is-invalid': errors['行政區'] }"
+                      >
+                        <option selected disabled>
+                          請選擇行政區
+                        </option>
+                        <option
+                          v-for="district in districtList"
+                          :key="district.zip"
+                          :value="district.name"
+                        >
+                          {{ district.name }}
+                        </option>
+                      </VField>
+                    </div>
+                    <VField
+                      id="road"
+                      v-model="userInfo.address.detail"
+                      name="詳細地址"
+                      rules="required"
+                      type="text"
+                      class="form-control rounded-3"
+                      :class="{ 'is-invalid': errors['詳細地址'] }"
+                      placeholder="請輸入詳細地址"
+                    />
+                    <VErrorMessage name="詳細地址" class="invalid-feedback" />
+                  </div>
+                  <button
+                    ref="submitButtonRef"
+                    type="submit"
+                    class="d-none"
+                    :disabled="!meta.valid"
+                  />
+                </VForm>
               </div>
             </section>
 
@@ -397,7 +512,7 @@ function confirmBooking() {
               <button
                 class="btn btn-primary-100 py-4 text-neutral-0 fw-bold rounded-3"
                 type="button"
-                @click="confirmBooking"
+                @click="submitOrder"
               >
                 確認訂房
               </button>

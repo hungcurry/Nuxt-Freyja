@@ -30,6 +30,18 @@ type TOrderResult = {
   name?: string
   totalPrice?: number
 }
+// 用戶類型
+type TUser = {
+  address: {
+    zipcode: string | number
+    county: string
+    district: string
+    detail: string
+  }
+  name: string
+  email: string
+  phone: string
+}
 // 用戶註冊類型
 type TUserRegister = {
   name: string
@@ -81,5 +93,6 @@ export type {
   TRegistrationForm,
   TRoomFeature,
   TTodo,
+  TUser,
   TUserRegister,
 }
