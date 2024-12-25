@@ -19,7 +19,7 @@ const daysCount = ref(0)
 const bookingDate = ref({
   date: {
     start: todayDate,
-    end: null, // 退房日期
+    end: null,
   },
   // 最小可選日期(今天)
   minDate: todayDate,
@@ -41,11 +41,7 @@ const { data: room } = await useFetch(`/rooms/${roomId}`, {
     navigateTo('/')
   },
 })
-if (room.value) {
-  MAX_BOOKING_PEOPLE.value = room.value.maxPeople
-  bookingDate.value.maxPeople = room.value.maxPeople
-  setRoomInfo(room.value)
-}
+handleinit()
 
 function openModal() {
   datePickerRef.value?.openModal()
@@ -70,13 +66,20 @@ function takeReservation() {
     bookingDays: daysCount.value,
     peopleNum: bookingPeople.value,
   })
-  console.log('bookingInfo', bookingStore.bookingInfo)
+  // console.log('bookingInfo', bookingStore.bookingInfo)
 
   handleReservation()
   isDisabled.value = true
 }
 function handleReservation() {
   navigateTo(`/rooms/${roomId}/booking`)
+}
+function handleinit() {
+  if (room.value) {
+    MAX_BOOKING_PEOPLE.value = room.value.maxPeople
+    bookingDate.value.maxPeople = room.value.maxPeople
+    setRoomInfo(room.value)
+  }
 }
 </script>
 

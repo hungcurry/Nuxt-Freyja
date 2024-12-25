@@ -12,7 +12,7 @@ const bookingStore = useBookingStore()
 const submitButtonRef = useTemplateRef('submitButtonRef')
 const router = useRouter()
 const route = useRoute()
-const roomId = route.params.id
+const orderId = route.params.roomId
 const isLoading = ref(false)
 const userInfo = ref<TUser>({
   address: {
@@ -29,9 +29,7 @@ const { setOrderResult } = bookingStore
 const { roomInfo, bookingInfo } = storeToRefs(bookingStore)
 const { formatDateWeekday } = useDateRange()
 const { notifyWarn, notifySuccess } = useNotifications()
-if (!bookingInfo.value) {
-  navigateTo('/')
-}
+handleinit()
 
 const discountPrice = computed(() => {
   const price = roomInfo.value?.price
@@ -76,57 +74,50 @@ function submitOrder() {
     submitButtonRef.value.click()
   }
 }
+function handleinit() {
+  if (!bookingInfo.value) {
+    navigateTo('/')
+  }
+}
 async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
   try {
     isLoading.value = true
-
-    // 取得認證 cookie
     const cookie = useCookie('Freyja-auth')
 
-    // 設定郵遞區號
+    // 設定郵遞區號 / 組合地址
     if (districtList.value?.length) {
       userInfo.address.zipcode = districtList.value[0].zip
     }
     if (totalPrice.value) {
       roomInfo.totalPrice = totalPrice.value
     }
-    // 組合地址
     const fullAddress = `${userInfo.address.county}${userInfo.address.district}${userInfo.address.detail}`
+    const orderUserInfo = {
+      name: userInfo.name,
+      phone: userInfo.phone,
+      email: userInfo.email,
+      address: {
+        zipcode: String(userInfo.address.zipcode),
+        detail: fullAddress,
+      },
+    }
 
     // 設定訂房結果
     const bookingResultData = {
       ...roomInfo,
-      userInfo: {
-        name: userInfo.name,
-        phone: userInfo.phone,
-        email: userInfo.email,
-        address: {
-          zipcode: String(userInfo.address.zipcode),
-          detail: fullAddress,
-        },
-      },
+      userInfo: orderUserInfo,
     }
     console.log('bookingResultData', bookingResultData)
     setOrderResult(bookingResultData)
 
     // 建立訂單資料
     const orderData = {
-      roomId: roomInfo._id,
+      roomId: bookingInfo.value?.roomId,
       checkInDate: bookingInfo.value?.checkInDate,
       checkOutDate: bookingInfo.value?.checkOutDate,
       peopleNum: bookingInfo.value?.peopleNum,
-      userInfo: {
-        name: userInfo.name,
-        phone: userInfo.phone,
-        email: userInfo.email,
-        address: {
-          zipcode: String(userInfo.address.zipcode),
-          detail: fullAddress,
-        },
-      },
+      userInfo: orderUserInfo,
     }
-    console.log('orderData', orderData)
-
     notifySuccess('成功', '訂單建立成功')
 
     // 清空表單並導向確認頁
@@ -136,14 +127,13 @@ async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
     //   body: orderData,
     //   headers: cookie.value ? { Authorization: cookie.value } : undefined,
     // })
-    // 清空表單並導向確認頁
     // navigateTo('/confirm')
     // return result._id
 
     setTimeout(() => {
       isLoading.value = false
       resetUserForm()
-      navigateTo(`/confirm/${roomId}`)
+      navigateTo(`/confirm/${orderId}`)
     }, 1500)
   }
   catch (error) {

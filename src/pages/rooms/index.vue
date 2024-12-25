@@ -3,6 +3,10 @@ import type { TApiResponse, TApiRoomItem } from '@/types/apiTypes'
 import { Icon } from '@iconify/vue'
 import { Autoplay, Navigation, Pagination } from 'swiper/modules'
 
+definePageMeta({
+  name: 'rooms',
+})
+
 const { isApiSuccess } = useApi()
 const swiperOptions = ref({
   modules: [Navigation, Pagination, Autoplay],
@@ -33,7 +37,7 @@ const { data: roomsList } = await useFetch('/rooms', {
   transform: (response: TApiResponse<TApiRoomItem[]>) => {
     if (isApiSuccess(response)) {
       const { result } = response
-      console.log('roomsList', result)
+      // console.log('roomsList', result)
       return result
     }
   },
@@ -97,7 +101,7 @@ const { data: roomsList } = await useFetch('/rooms', {
         <h2 class="mb-10 mb-md-20 fs-1 fw-bold text-primary-100">
           各種房型，任您挑選
         </h2>
-        <ul class="d-flex flex-column gap-6 gap-md-12 list-unstyled">
+        <ul v-if="roomsList" class="d-flex flex-column gap-6 gap-md-12 list-unstyled">
           <li
             v-for="room in roomsList"
             :key="room._id"
