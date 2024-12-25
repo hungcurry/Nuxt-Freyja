@@ -86,7 +86,10 @@ async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
 
     // 設定郵遞區號 / 組合地址
     if (districtList.value?.length) {
-      userInfo.address.zipcode = districtList.value[0].zip
+      const district = districtList.value.find(district => district.name === userInfo.address.district)
+      if (district) {
+        userInfo.address.zipcode = district.zip
+      }
     }
     if (totalPrice.value) {
       roomInfo.totalPrice = totalPrice.value

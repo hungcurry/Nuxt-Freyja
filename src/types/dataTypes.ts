@@ -43,16 +43,14 @@ type TUser = {
   phone: string
 }
 // 用戶註冊類型
-type TUserRegister = {
-  name: string
-  email: string
+type TUserRegister = TUser & {
   password: string
-  phone: string
+  confirmPassword: string
   birthday: string
-  address: {
-    zipcode: string
-    detail: string
-  }
+  year: string
+  month: string
+  day: string
+  agreementCheck: boolean
 }
 // 選單項目類型
 type TMenuItem = {
