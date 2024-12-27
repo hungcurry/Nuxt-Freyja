@@ -52,6 +52,10 @@ type TUserRegister = TUser & {
   day: string
   agreementCheck: boolean
 }
+type TRememberMe = {
+  email: string
+  password: string
+}
 // 選單項目類型
 type TMenuItem = {
   label: string
@@ -89,6 +93,7 @@ export type {
   TMenuItem,
   TOrderResult,
   TRegistrationForm,
+  TRememberMe,
   TRoomFeature,
   TTodo,
   TUser,

@@ -22,3 +22,17 @@ $utilities: map-merge(
   )
 );
 
+.vue-notification.warn {
+  background: #a2856a !important;
+  border-left-color: #ed7f17 !important;
+}
+
+:deep(.vue-notification.error) {
+  background: #e54d42;
+  border-left-color: #b82e24;
+}
+
+:deep(.vue-notification.success) {
+  background: #68cd86;
+  border-left-color: #42a85f;
+}

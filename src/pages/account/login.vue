@@ -1,7 +1,101 @@
 <script setup lang="ts">
+import type { TApiGenericResponse, TApiUser } from '@/types/apiTypes'
+import type { TRememberMe } from '@/types/dataTypes'
+import { FetchError } from 'ofetch'
+
 definePageMeta({
   name: 'login',
   layout: 'registerlayout',
+})
+
+const bookingStore = useBookingStore()
+const isDisabled = ref(false)
+const isChecked = ref(false)
+const userLoginObject = ref({
+  email: '',
+  password: '',
+})
+const { notifyWarn, notifySuccess, notifyError } = useNotifications()
+const { bookingInfo } = storeToRefs(bookingStore)
+
+async function handelLogin() {
+  if (!userLoginObject.value.email
+    || !userLoginObject.value.password
+    || !isChecked.value) {
+    notifyWarn('請輸入必要資訊')
+    return
+  }
+
+  isDisabled.value = true
+  try {
+    const response = await $fetch<TApiGenericResponse<TApiUser>>('/v1/user/login', {
+      baseURL: 'https://nuxr3.zeabur.app/api',
+      method: 'POST',
+      body: userLoginObject.value,
+    })
+
+    if (response.status) {
+      console.log('登入成功response', response)
+      const { status, token } = response
+      const auth = useCookie('Freyja-token', { maxAge: 3600 })
+      auth.value = token
+
+      const rememberMe = useCookie<TRememberMe>('Freyja-auth', { maxAge: 3600 })
+      const remember = {
+        email: userLoginObject.value.email,
+        password: userLoginObject.value.password,
+      }
+      rememberMe.value = remember
+      await notifySuccess('登入成功')
+
+      // 如果已經有訂房資料，則跳轉到訂房頁面
+      if (bookingInfo.value) {
+        const { roomId } = bookingInfo.value
+        navigateTo(`/rooms/${roomId}/booking`)
+      }
+      else {
+        navigateTo('/')
+      }
+    }
+  }
+  catch (error) {
+    if (error instanceof FetchError) {
+      console.error('Fetch failed:', error.response?._data)
+      const errorMessage = error.response?._data?.message || '登入失敗'
+      notifyError(errorMessage)
+    }
+  }
+  finally {
+    isDisabled.value = false
+    isChecked.value = false
+    userLoginObject.value = {
+      email: '',
+      password: '',
+    }
+  }
+}
+async function handleRememberMe() {
+  const rememberMe = useCookie<TRememberMe | null>('Freyja-auth')
+  if (rememberMe.value === undefined)
+    return
+
+  try {
+    if (rememberMe.value) {
+      isChecked.value = true
+      userLoginObject.value = JSON.parse(JSON.stringify(rememberMe.value))
+    }
+    else {
+      isChecked.value = false
+    }
+  }
+  catch (error) {
+    console.error('解析 Cookie 時發生錯誤:', error)
+    notifyWarn('登入資訊已過期，請重新登入')
+    rememberMe.value = null
+  }
+}
+onMounted(async () => {
+  await handleRememberMe()
 })
 </script>
 
@@ -26,8 +120,8 @@ definePageMeta({
         </label>
         <input
           id="email"
+          v-model="userLoginObject.email"
           class="form-control p-4 text-neutral-100 fw-medium border-neutral-40"
-          value="jessica@sample.com"
           placeholder="請輸入信箱"
           type="email"
           autocomplete="username"
@@ -42,8 +136,8 @@ definePageMeta({
         </label>
         <input
           id="password"
+          v-model="userLoginObject.password"
           class="form-control p-4 text-neutral-100 fw-medium border-neutral-40"
-          value="jessica@sample.com"
           placeholder="請輸入密碼"
           type="password"
           autocomplete="current-password"
@@ -53,9 +147,9 @@ definePageMeta({
         <div class="form-check d-flex align-items-end gap-2 text-neutral-0">
           <input
             id="remember"
+            v-model="isChecked"
             class="form-check-input"
             type="checkbox"
-            value=""
           >
           <label
             class="form-check-label fw-bold"
@@ -74,6 +168,7 @@ definePageMeta({
       <button
         class="btn btn-primary-100 w-100 py-4 text-neutral-0 fw-bold"
         type="button"
+        @click="handelLogin"
       >
         會員登入
       </button>

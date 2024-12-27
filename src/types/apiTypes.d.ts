@@ -63,6 +63,23 @@ type TApiRoomItem = {
   updatedAt: string
   totalPrice?: number
 }
+// 用戶類型
+type TApiUser = {
+  address: {
+    zipcode: number
+    detail: string
+    county: string
+    city: string
+  }
+  _id: string
+  name: string
+  email: string
+  phone: string
+  birthday: string
+  createdAt: string
+  updatedAt: string
+  id: string
+}
 // 認證類型
 type TApiAuth = {
   status: boolean
@@ -77,4 +94,5 @@ export type {
   TApiResponse,
   TApiRoomItem,
   TApiSuccessResponse,
+  TApiUser,
 }

@@ -3,6 +3,7 @@ import { Icon } from '@iconify/vue'
 
 definePageMeta({
   name: 'confirm-detail',
+  middleware: ['account-auth'],
 })
 
 const bookingStore = useBookingStore()
@@ -10,13 +11,6 @@ const route = useRoute()
 const { orderId } = route.params
 const { bookingResult, bookingInfo } = storeToRefs(bookingStore)
 const { formatDateWeekday } = useDateRange()
-handleinit()
-
-function handleinit() {
-  if (!bookingInfo.value) {
-    navigateTo('/')
-  }
-}
 </script>
 
 <template>

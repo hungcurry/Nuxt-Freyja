@@ -3,9 +3,11 @@ import type { TApiGenericResponse, TApiRoomItem } from '@/types/apiTypes'
 import type { TUser } from '@/types/dataTypes'
 import { cityList, ZipCodeMap } from '@/utils/zipcodes'
 import { Icon } from '@iconify/vue'
+import { FetchError } from 'ofetch'
 
 definePageMeta({
   name: 'booking',
+  middleware: ['account-auth'],
 })
 
 const bookingStore = useBookingStore()
@@ -28,8 +30,7 @@ const userInfo = ref<TUser>({
 const { setOrderResult } = bookingStore
 const { roomInfo, bookingInfo } = storeToRefs(bookingStore)
 const { formatDateWeekday } = useDateRange()
-const { notifyWarn, notifySuccess } = useNotifications()
-handleinit()
+const { notifyWarn } = useNotifications()
 
 const discountPrice = computed(() => {
   const price = roomInfo.value?.price
@@ -74,46 +75,37 @@ function submitOrder() {
     submitButtonRef.value.click()
   }
 }
-function handleinit() {
-  if (!bookingInfo.value) {
-    navigateTo('/')
+function handleBookingData(roomInfo: TApiRoomItem, userInfo: TUser) {
+  // 設定郵遞區號
+  if (districtList.value?.length) {
+    const district = districtList.value.find(district => district.name === userInfo.address.district)
+    if (district)
+      userInfo.address.zipcode = district.zip
   }
+  if (totalPrice.value) {
+    roomInfo.totalPrice = totalPrice.value
+  }
+  // 組合地址
+  const fullAddress = `${userInfo.address.county}${userInfo.address.district}${userInfo.address.detail}`
+  const orderUserInfo = {
+    name: userInfo.name,
+    phone: userInfo.phone,
+    email: userInfo.email,
+    address: {
+      zipcode: String(userInfo.address.zipcode),
+      detail: fullAddress,
+    },
+  }
+  setOrderResult({ ...roomInfo, userInfo: orderUserInfo })
+
+  return orderUserInfo
 }
 async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
   try {
     isLoading.value = true
-    const cookie = useCookie('Freyja-auth')
+    const cookie = useCookie('Freyja-token')
+    const orderUserInfo = handleBookingData(roomInfo, userInfo)
 
-    // 設定郵遞區號 / 組合地址
-    if (districtList.value?.length) {
-      const district = districtList.value.find(district => district.name === userInfo.address.district)
-      if (district) {
-        userInfo.address.zipcode = district.zip
-      }
-    }
-    if (totalPrice.value) {
-      roomInfo.totalPrice = totalPrice.value
-    }
-    const fullAddress = `${userInfo.address.county}${userInfo.address.district}${userInfo.address.detail}`
-    const orderUserInfo = {
-      name: userInfo.name,
-      phone: userInfo.phone,
-      email: userInfo.email,
-      address: {
-        zipcode: String(userInfo.address.zipcode),
-        detail: fullAddress,
-      },
-    }
-
-    // 設定訂房結果
-    const bookingResultData = {
-      ...roomInfo,
-      userInfo: orderUserInfo,
-    }
-    console.log('bookingResultData', bookingResultData)
-    setOrderResult(bookingResultData)
-
-    // 建立訂單資料
     const orderData = {
       roomId: bookingInfo.value?.roomId,
       checkInDate: bookingInfo.value?.checkInDate,
@@ -121,27 +113,27 @@ async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
       peopleNum: bookingInfo.value?.peopleNum,
       userInfo: orderUserInfo,
     }
-    notifySuccess('成功', '訂單建立成功')
-
-    // 清空表單並導向確認頁
-    // const { result } = await $fetch<TApiGenericResponse<any>>('/api/v1/orders/', {
-    //   baseURL: 'https://nuxr3.zeabur.app',
-    //   method: 'POST',
-    //   body: orderData,
-    //   headers: cookie.value ? { Authorization: cookie.value } : undefined,
-    // })
-    // navigateTo('/confirm')
-    // return result._id
-
-    setTimeout(() => {
-      isLoading.value = false
-      resetUserForm()
-      navigateTo(`/confirm/${orderId}`)
-    }, 1500)
+    const response = await $fetch<TApiGenericResponse<any>>('/api/v1/orders', {
+      baseURL: 'https://nuxr3.zeabur.app',
+      method: 'POST',
+      body: orderData,
+      headers: cookie.value ? { Authorization: cookie.value } : undefined,
+    })
+    if (response.status) {
+      setTimeout(async () => {
+        // console.log('response', response)
+        isLoading.value = false
+        await navigateTo(`/confirm/${orderId}`)
+        resetUserForm()
+      }, 1500)
+    }
   }
   catch (error) {
-    console.error('建立訂單失敗:', error)
-    throw error
+    if (error instanceof FetchError) {
+      console.error('建立訂單失敗:', error)
+      isLoading.value = false
+      throw error
+    }
   }
 }
 </script>

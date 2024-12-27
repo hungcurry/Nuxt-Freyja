@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { TApiResponse } from '@/types/apiTypes'
+import type { TApiGenericResponse } from '@/types/apiTypes'
 import type { TUser, TUserRegister } from '@/types/dataTypes'
 import { cityList, ZipCodeMap } from '@/utils/zipcodes'
 import { Icon } from '@iconify/vue'
+import { FetchError } from 'ofetch'
 
 definePageMeta({
   name: 'signup',
@@ -97,7 +98,7 @@ async function handelRegister() {
   // console.log('userRegiste', userRegiste)
 
   try {
-    const response = await $fetch<TApiResponse<TUser>>('/v1/user/signup', {
+    const response = await $fetch<TApiGenericResponse<TUser>>('/v1/user/signup', {
       baseURL: 'https://nuxr3.zeabur.app/api',
       method: 'POST',
       body: userRegiste,
@@ -125,10 +126,12 @@ async function handelRegister() {
       navigateTo('/account/login')
     }
   }
-  catch (error: unknown) {
-    console.log('error', (error as any).response?._data)
-    const errorMessage = (error as any).response?._data?.message || '註冊失敗'
-    notifyError(errorMessage)
+  catch (error) {
+    if (error instanceof FetchError) {
+      console.error('Fetch failed:', error.response?._data)
+      const errorMessage = error.response?._data?.message || '註冊失敗'
+      notifyError(errorMessage)
+    }
   }
   finally {
     isDisabled.value = false
@@ -239,7 +242,7 @@ async function handelRegister() {
         </div>
 
         <button
-          class="btn btn-neutral-40 w-100 py-4 text-neutral-60 fw-bold"
+          class="btn btn-primary-100 w-100 py-4 text-neutral-0 fw-bold"
           type="button"
           @click="handleCreation"
         >
