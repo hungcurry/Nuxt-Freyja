@@ -1,19 +1,64 @@
 <script setup lang="ts">
+import type { TApiGenericResponse, TApiUser } from '@/types/apiTypes'
+import type { TRememberMe } from '@/types/dataTypes'
 import { Icon } from '@iconify/vue'
+import { FetchError } from 'ofetch'
 
 const route = useRoute()
-const transparentBgRoute = ['home', 'rooms']
-const isTransparentRoute = computed(() => transparentBgRoute.includes(route.name as string))
 const isScrolled = ref(false)
+const token = useCookie('Freyja-token')
+const auth = useCookie<TRememberMe | null>('Freyja-auth')
+const transparentBgRoute = ['home', 'rooms']
+const userStore = useUserStore()
+const userLoginObject = ref({
+  email: '',
+  password: '',
+})
+const { setUserInfo } = userStore
+const { userInfo } = storeToRefs(userStore)
+const isTransparentRoute = computed(() => {
+  return transparentBgRoute.includes(route.name as string)
+})
 
 function handleScroll() {
   isScrolled.value = window.scrollY > 50
 }
-function goToUserPage() {
+function handleGoToUser() {
   navigateTo('/user')
 }
+function handleGoToLogin() {
+  navigateTo('/account/login')
+}
+function handleLogOut() {
+  token.value = null
+  navigateTo('/')
+}
+async function handelLogin() {
+  if (!token.value || !auth.value)
+    return
+
+  try {
+    userLoginObject.value = JSON.parse(JSON.stringify(auth.value))
+    const { status, result } = await $fetch<TApiGenericResponse<TApiUser>>('/v1/user/login', {
+      baseURL: 'https://nuxr3.zeabur.app/api',
+      method: 'POST',
+      body: userLoginObject.value,
+    })
+
+    if (status && result)
+      setUserInfo(result)
+  }
+  catch (error) {
+    if (error instanceof FetchError) {
+      const errorMessage = error.response?._data?.message || '登入失敗'
+      console.error('登入失敗:', errorMessage)
+    }
+  }
+}
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  handelLogin()
 })
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
@@ -50,44 +95,48 @@ onUnmounted(() => {
           <ul class="navbar-nav gap-4 ms-auto fw-bold">
             <li class="nav-item">
               <NuxtLink
-                :to="{
-                  name: 'rooms',
-                }"
+                :to="{ name: 'rooms' }"
                 class="nav-link p-4 text-neutral-0"
               >
                 客房旅宿
               </NuxtLink>
             </li>
-            <li class="d-none d-md-block nav-item">
-              <div class="btn-group">
-                <button type="button" class="nav-link d-flex gap-2 p-4 text-neutral-0" data-bs-toggle="dropdown">
-                  <Icon class="fs-5" icon="mdi:account-circle-outline" />
-                  Jessica
-                </button>
-                <ul class="dropdown-menu py-3 overflow-hidden" style="right: 0; left: auto; border-radius: 20px;">
-                  <li>
-                    <NuxtLink class="dropdown-item px-6 py-4" @click="goToUserPage">
-                      我的帳戶
-                    </NuxtLink>
-                  </li>
-                  <li>
-                    <NuxtLink class="dropdown-item px-6 py-4" to="/account/login">
-                      登出
-                    </NuxtLink>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li class="d-md-none nav-item">
-              <NuxtLink to="/" class="nav-link p-4 text-neutral-0">
-                會員登入
-              </NuxtLink>
-            </li>
+
+            <!-- 會員登入 -->
+            <template v-if="!token || !auth">
+              <li class="nav-item">
+                <NuxtLink class="nav-link p-4 text-neutral-0" @click="handleGoToLogin">
+                  會員登入
+                </NuxtLink>
+              </li>
+            </template>
+
+            <template v-else>
+              <li class="d-md-block nav-item">
+                <div class="btn-group">
+                  <button type="button" class="nav-link d-flex gap-2 p-4 text-neutral-0" data-bs-toggle="dropdown">
+                    <Icon class="fs-5" icon="mdi:account-circle-outline" />
+                    {{ userInfo?.name }}
+                  </button>
+                  <ul class="dropdown-menu py-3 overflow-hidden" style="right: 0; left: auto; border-radius: 20px;">
+                    <li>
+                      <NuxtLink class="dropdown-item px-6 py-4" @click="handleGoToUser">
+                        我的帳戶
+                      </NuxtLink>
+                    </li>
+                    <li>
+                      <NuxtLink class="dropdown-item px-6 py-4" @click="handleLogOut">
+                        登出
+                      </NuxtLink>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+            </template>
+
             <li class="nav-item">
               <NuxtLink
-                :to="{
-                  name: 'rooms',
-                }"
+                :to="{ name: 'rooms' }"
                 class="btn btn-primary-100 px-8 py-4 text-white fw-bold border-0 rounded-3"
               >
                 立即訂房

@@ -1,5 +1,8 @@
 <script setup lang="ts">
-const userId = 'Jessica'
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
+
+const userId = userInfo?.value?.id
 navigateTo({
   name: 'user-userId',
   params: { userId },

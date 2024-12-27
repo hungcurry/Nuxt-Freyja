@@ -36,7 +36,7 @@ async function handelLogin() {
 
     if (response.status) {
       console.log('登入成功response', response)
-      const { status, token } = response
+      const { status, token, result } = response
       const auth = useCookie('Freyja-token', { maxAge: 3600 })
       auth.value = token
 
