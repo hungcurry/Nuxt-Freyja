@@ -94,6 +94,7 @@ async function handleRememberMe() {
     rememberMe.value = null
   }
 }
+
 onMounted(async () => {
   await handleRememberMe()
 })

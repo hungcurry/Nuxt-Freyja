@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const userStore = useUserStore()
 const route = useRoute()
 </script>
 
@@ -25,7 +26,7 @@ const route = useRoute()
             alt="avatar"
           >
           <h1 class="text-neutral-0 fw-bold">
-            Hello，Jessica
+            Hello，{{ userStore?.userInfo?.name }}
           </h1>
         </div>
       </div>

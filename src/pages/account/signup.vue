@@ -303,7 +303,7 @@ async function handelRegister() {
               autocomplete="bday-year"
             >
               <option
-                v-for="year in 65"
+                v-for="year in 85"
                 :key="year"
                 :value="`${year + 1958}`"
               >
@@ -329,7 +329,7 @@ async function handelRegister() {
               autocomplete="bday-day"
             >
               <option
-                v-for="day in 30"
+                v-for="day in 31"
                 :key="day"
                 :value="`${day}`"
               >

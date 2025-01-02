@@ -33,6 +33,15 @@ function handleLogOut() {
   token.value = null
   navigateTo('/')
 }
+function handleCheckLogin() {
+  const timer = setInterval(() => {
+    const checkToken = useCookie('Freyja-token')
+    if (token.value !== checkToken.value) {
+      window.location.reload()
+      clearInterval(timer)
+    }
+  }, 100)
+}
 async function handelLogin() {
   if (!token.value || !auth.value)
     return
@@ -56,9 +65,10 @@ async function handelLogin() {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
-  handelLogin()
+  // await handleCheckLogin()
+  await handelLogin()
 })
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)

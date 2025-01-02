@@ -15,7 +15,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return navigateTo('/account/login')
   }
   // booking / confirm 頁面 沒資料跳回首頁
-  if (!bookingInfo.value) {
+  const NEED_BOOKING_INFO_PAGES = ['booking', 'confirm-detail']
+  if (!bookingInfo.value && NEED_BOOKING_INFO_PAGES.includes(to.name as string)) {
     return navigateTo('/')
   }
 

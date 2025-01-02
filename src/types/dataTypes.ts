@@ -50,7 +50,7 @@ type TUserRegister = TUser & {
   year: string
   month: string
   day: string
-  agreementCheck: boolean
+  agreementCheck?: boolean
 }
 type TRememberMe = {
   email: string
