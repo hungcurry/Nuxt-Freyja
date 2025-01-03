@@ -37,10 +37,10 @@ async function handelLogin() {
     if (response.status) {
       console.log('登入成功response', response)
       const { status, token, result } = response
-      const auth = useCookie('Freyja-token', { maxAge: 3600 })
+      const auth = useCookie('Freyja-token', { maxAge: 21600 })
       auth.value = token
 
-      const rememberMe = useCookie<TRememberMe>('Freyja-auth', { maxAge: 3600 })
+      const rememberMe = useCookie<TRememberMe>('Freyja-auth', { maxAge: 21600 })
       const remember = {
         email: userLoginObject.value.email,
         password: userLoginObject.value.password,
