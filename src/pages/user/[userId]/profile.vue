@@ -35,7 +35,7 @@ const profileForm = ref<TUserRegister>({
   day: '',
 })
 const { userInfo } = storeToRefs(userStore)
-const { notifySuccess, notifyWarn } = useNotifications()
+const { notifySuccess, notifyWarn, notifyError } = useNotifications()
 const { formatDate } = useDateRange()
 const districtList = computed(() => {
   const city = ZipCodeMap.find(city => city.name === profileForm.value.address.county)
@@ -49,14 +49,14 @@ const fullBirthday = computed(() => {
 })
 
 async function handleSavePassword() {
-  if (passwordForm.value.newPassword === ''
-    || passwordForm.value.confirmPassword === ''
-    || passwordForm.value.oldPassword === '') {
+  const { newPassword, confirmPassword, oldPassword } = passwordForm.value
+
+  if (!newPassword || !confirmPassword || !oldPassword) {
     notifyWarn('密碼不能為空')
     return
   }
 
-  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+  if (newPassword !== confirmPassword) {
     notifyWarn('密碼不一致')
     return
   }
@@ -64,35 +64,56 @@ async function handleSavePassword() {
   const sendObj = {
     email: passwordForm.value.email,
     code: '0Zvjde',
-    newPassword: passwordForm.value.newPassword,
+    newPassword,
   }
-  // api get...
+  // try {
+  //   const response = await $fetch<TApiGenericResponse<any>>('/v1/user/forgot', {
+  //     baseURL: 'https://nuxr3.zeabur.app/api',
+  //     method: 'POST',
+  //     body: sendObj,
+  //   })
+
+  //   if (response.status) {
+  //     console.log('response', response)
+  //   }
+  // }
+  // catch (error) {
+  //   if (error instanceof FetchError) {
+  //     console.error('Fetch failed:', error.response?._data)
+  //     const errorMessage = error.response?._data?.message || '登入失敗'
+  //     notifyError(errorMessage)
+  //   }
+  // }
+  // finally {
+  //   passwordForm.value.newPassword = ''
+  //   passwordForm.value.confirmPassword = ''
+  // }
   passwordForm.value.oldPassword = sendObj.newPassword
   notifySuccess('密碼已更新')
   isEditPassword.value = !isEditPassword.value
 }
+
 async function handleSaveProfile() {
-  if (profileForm.value.name === ''
-    || profileForm.value.phone === ''
-    || profileForm.value.birthday === '') {
+  const { name, phone, birthday } = profileForm.value
+
+  if (!name || !phone || !birthday) {
     notifyWarn('資料不能為空')
     return
   }
 
-  if (fullBirthday.value) {
+  if (fullBirthday.value)
     profileForm.value.birthday = fullBirthday.value
-  }
+
   // 設定郵遞區號 / 組合地址
   if (districtList.value?.length) {
     const district = districtList.value.find(district => district.name === profileForm.value.address.district)
-    if (district) {
+    if (district)
       profileForm.value.address.zipcode = district.zip
-    }
   }
 
   const sendObj = {
-    name: profileForm.value.name,
-    phone: profileForm.value.phone,
+    name,
+    phone,
     birthday: profileForm.value.birthday,
     address: profileForm.value.address,
   }
@@ -100,30 +121,40 @@ async function handleSaveProfile() {
   notifySuccess('資料已更新')
   isEditProfile.value = !isEditProfile.value
 }
+
 if (auth.value) {
-  const newAuth = JSON.parse(JSON.stringify(auth.value))
-  passwordForm.value.email = newAuth.email
-  passwordForm.value.oldPassword = newAuth.password
+  const { email, password } = JSON.parse(JSON.stringify(auth.value))
+  passwordForm.value.email = email
+  passwordForm.value.oldPassword = password
 }
+
 // 監聽userInfo
 watchEffect(() => {
   if (userInfo.value) {
-    const newUser = JSON.parse(JSON.stringify(userInfo.value))
-    profileForm.value.name = newUser.name
-    profileForm.value.phone = newUser.phone
-    profileForm.value.birthday = newUser.birthday
-    profileForm.value.address.county = newUser.address.city
-    profileForm.value.address.district = newUser.address.county
-    profileForm.value.address.detail = newUser.address.detail
-    profileForm.value.address.zipcode = newUser.address.zipcode
+    const {
+      name,
+      phone,
+      birthday,
+      address: { city, county, detail, zipcode },
+    } = JSON.parse(JSON.stringify(userInfo.value))
+
+    Object.assign(profileForm.value, {
+      name,
+      phone,
+      birthday,
+      address: {
+        county: city,
+        district: county,
+        detail,
+        zipcode,
+      },
+    })
 
     // 轉(YYYY/MM/DD)
-    const time = formatDate(new Date(newUser.birthday))
-    const [year, month, day] = time.split('-')
-    const newDay = Number.parseInt(day, 10)
+    const [year, month, day] = formatDate(new Date(birthday)).split('-')
     profileForm.value.year = year
     profileForm.value.month = month
-    profileForm.value.day = String(newDay)
+    profileForm.value.day = String(Number.parseInt(day, 10))
   }
 })
 </script>

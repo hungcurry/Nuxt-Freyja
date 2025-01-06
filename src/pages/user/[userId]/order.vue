@@ -10,10 +10,10 @@ definePageMeta({
 const token = useCookie<string>('Freyja-token')
 const modalRef = useTemplateRef('modalRef')
 const visibleCount = ref(3)
-let modal: { show: () => void, hide: () => void }
 const { notifySuccess, notifyError } = useNotifications()
 const { formatDateWeekday } = useDateRange()
 const { $ModalInstance } = useNuxtApp()
+let modal: { show: () => void, hide: () => void }
 
 // SSR
 const { data: bookingList } = await useFetch('/orders', {
@@ -34,6 +34,9 @@ const { data: bookingList } = await useFetch('/orders', {
 })
 const orderList = computed(() => {
   return JSON.parse(JSON.stringify(bookingList.value))
+})
+const sliceOrderList = computed(() => {
+  return orderList.value.slice(0, visibleCount.value)
 })
 const latestOrder = computed(() => {
   return orderList.value[orderList.value.length - 1] || {}
@@ -229,11 +232,11 @@ onMounted(() => {
         class="history-order rounded-3xl d-flex flex-column gap-6 gap-md-10 p-4 p-md-10 bg-neutral-0"
       >
         <h2 class="mb-0 text-neutral-100 fs-7 fs-md-5 fw-bold">
-          歷史訂單 : {{ bookingList?.length }} 筆數
+          歷史訂單 : {{ orderList?.length }} 筆數
         </h2>
 
         <template
-          v-for="(booking) in bookingList.slice(0, visibleCount)"
+          v-for="(booking) in sliceOrderList"
           :key="booking._id"
         >
           <div class="d-flex flex-column flex-lg-row gap-6">
