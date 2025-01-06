@@ -31,9 +31,10 @@ const swiperOptions = ref({
   },
   isNavigation: true,
 })
+const { public: { apiBaseUrl } } = useRuntimeConfig()
 // SSR
 const { data: roomsList } = await useFetch('/rooms', {
-  baseURL: 'https://nuxr3.zeabur.app/api/v1',
+  baseURL: apiBaseUrl,
   transform: (response: TApiResponse<TApiRoomItem[]>) => {
     if (isApiSuccess(response)) {
       const { result } = response

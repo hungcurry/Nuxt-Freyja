@@ -31,6 +31,7 @@ const userRegisteObject = ref<TUserRegister>({
   agreementCheck: false,
 })
 const { notifyWarn, notifySuccess, notifyError } = useNotifications()
+const { public: { apiBaseUrl } } = useRuntimeConfig()
 const districtList = computed(() => {
   const city = ZipCodeMap.find(city => city.name === userRegisteObject.value.address.county)
   return city?.districts
@@ -98,8 +99,8 @@ async function handelRegister() {
   // console.log('userRegiste', userRegiste)
 
   try {
-    const response = await $fetch<TApiGenericResponse<TUser>>('/v1/user/signup', {
-      baseURL: 'https://nuxr3.zeabur.app/api',
+    const response = await $fetch<TApiGenericResponse<TUser>>('/user/signup', {
+      baseURL: apiBaseUrl,
       method: 'POST',
       body: userRegiste,
     })

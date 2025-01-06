@@ -17,6 +17,7 @@ const userLoginObject = ref({
 })
 const { notifyWarn, notifySuccess, notifyError } = useNotifications()
 const { bookingInfo } = storeToRefs(bookingStore)
+const { public: { apiBaseUrl } } = useRuntimeConfig()
 
 async function handelLogin() {
   if (!userLoginObject.value.email
@@ -28,8 +29,8 @@ async function handelLogin() {
 
   isDisabled.value = true
   try {
-    const response = await $fetch<TApiGenericResponse<TApiUser>>('/v1/user/login', {
-      baseURL: 'https://nuxr3.zeabur.app/api',
+    const response = await $fetch<TApiGenericResponse<TApiUser>>('/user/login', {
+      baseURL: apiBaseUrl,
       method: 'POST',
       body: userLoginObject.value,
     })

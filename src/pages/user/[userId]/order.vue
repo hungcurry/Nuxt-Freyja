@@ -13,6 +13,7 @@ const visibleCount = ref(3)
 const { notifySuccess, notifyError } = useNotifications()
 const { formatDateWeekday } = useDateRange()
 const { $ModalInstance } = useNuxtApp()
+const { public: { apiBaseUrl } } = useRuntimeConfig()
 let modal: { show: () => void, hide: () => void }
 
 // SSR
@@ -86,7 +87,7 @@ async function handleDelete(id: string) {
 
   try {
     const response = await $fetch<TApiGenericResponse<any>>(`/orders/${id}`, {
-      baseURL: 'https://nuxr3.zeabur.app/api/v1',
+      baseURL: apiBaseUrl,
       method: 'DELETE',
       headers: {
         Authorization: token.value,

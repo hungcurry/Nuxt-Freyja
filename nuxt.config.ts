@@ -1,5 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 import path from 'node:path'
+import process from 'node:process'
 
 export default defineNuxtConfig({
   // compatibilityDate 屬性 : 將 Nuxt3 的功能和行為鎖定在 2024-04-03 之前的版本，
@@ -89,6 +90,11 @@ export default defineNuxtConfig({
     options: {
       linkActiveClass: 'active',
       linkExactActiveClass: 'active',
+    },
+  },
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: process.env.NUXT_API_BASE_URL || 'http://localhost:3000/api',
     },
   },
   // Auto-import pinia

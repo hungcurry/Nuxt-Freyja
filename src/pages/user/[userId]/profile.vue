@@ -37,6 +37,8 @@ const profileForm = ref<TUserRegister>({
 const { userInfo } = storeToRefs(userStore)
 const { notifySuccess, notifyWarn, notifyError } = useNotifications()
 const { formatDate } = useDateRange()
+const { public: { apiBaseUrl } } = useRuntimeConfig()
+
 const districtList = computed(() => {
   const city = ZipCodeMap.find(city => city.name === profileForm.value.address.county)
   return city?.districts
@@ -68,7 +70,7 @@ async function handleSavePassword() {
   }
   // try {
   //   const response = await $fetch<TApiGenericResponse<any>>('/v1/user/forgot', {
-  //     baseURL: 'https://nuxr3.zeabur.app/api',
+  //     baseURL: apiBaseUrl,
   //     method: 'POST',
   //     body: sendObj,
   //   })
@@ -92,7 +94,6 @@ async function handleSavePassword() {
   notifySuccess('密碼已更新')
   isEditPassword.value = !isEditPassword.value
 }
-
 async function handleSaveProfile() {
   const { name, phone, birthday } = profileForm.value
 
@@ -121,13 +122,11 @@ async function handleSaveProfile() {
   notifySuccess('資料已更新')
   isEditProfile.value = !isEditProfile.value
 }
-
 if (auth.value) {
   const { email, password } = JSON.parse(JSON.stringify(auth.value))
   passwordForm.value.email = email
   passwordForm.value.oldPassword = password
 }
-
 // 監聽userInfo
 watchEffect(() => {
   if (userInfo.value) {

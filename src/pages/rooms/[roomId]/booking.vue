@@ -31,6 +31,7 @@ const { setOrderResult } = bookingStore
 const { roomInfo, bookingInfo } = storeToRefs(bookingStore)
 const { formatDateWeekday } = useDateRange()
 const { notifyWarn } = useNotifications()
+const { public: { apiBaseUrl } } = useRuntimeConfig()
 
 const discountPrice = computed(() => {
   const price = roomInfo.value?.price
@@ -113,8 +114,8 @@ async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
       peopleNum: bookingInfo.value?.peopleNum,
       userInfo: orderUserInfo,
     }
-    const response = await $fetch<TApiGenericResponse<any>>('/api/v1/orders', {
-      baseURL: 'https://nuxr3.zeabur.app',
+    const response = await $fetch<TApiGenericResponse<any>>('/orders', {
+      baseURL: apiBaseUrl,
       method: 'POST',
       body: orderData,
       headers: cookie.value ? { Authorization: cookie.value } : undefined,

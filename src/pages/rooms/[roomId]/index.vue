@@ -9,6 +9,7 @@ definePageMeta({
 const bookingStore = useBookingStore()
 const { todayDate, nextYearDate, formatDateOnMobile } = useDateRange()
 const { setBookingInfo, setRoomInfo } = bookingStore
+const { public: { apiBaseUrl } } = useRuntimeConfig()
 const datePickerRef = useTemplateRef('datePickerRef')
 const isDisabled = ref(true)
 const route = useRoute()
@@ -29,7 +30,7 @@ const bookingDate = ref({
 })
 // SSR
 const { data: room } = await useFetch(`/rooms/${roomId}`, {
-  baseURL: 'https://nuxr3.zeabur.app/api/v1',
+  baseURL: apiBaseUrl,
   transform: (response: TApiGenericResponse<TApiRoomItem>) => {
     const { result } = response
     // console.log('room', result)
