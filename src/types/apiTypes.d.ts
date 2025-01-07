@@ -44,6 +44,15 @@ type TApiNewsItem = {
   createdAt: string
   updatedAt: string
 }
+type TApiCulinaryItem = {
+  _id: string
+  title: string
+  description: string
+  image: string
+  createdAt: string
+  updatedAt: string
+  diningTime: string
+}
 // 房間項目類型
 type TApiRoomItem = {
   _id: string
@@ -88,6 +97,7 @@ type TApiAuth = {
 export type {
   TApiAuth,
   TApiBaseResponse,
+  TApiCulinaryItem,
   TApiFailureResponse,
   TApiGenericResponse,
   TApiNewsItem,
