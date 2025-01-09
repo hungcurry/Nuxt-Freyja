@@ -17,7 +17,7 @@ const { public: { apiBaseUrl } } = useRuntimeConfig()
 let modal: { show: () => void, hide: () => void }
 
 // SSR
-const { data: bookingList } = await useFetch('/orders', {
+const { data: bookingList, refresh } = await useFetch('/orders', {
   baseURL: apiBaseUrl,
   method: 'GET',
   headers: {
@@ -25,12 +25,14 @@ const { data: bookingList } = await useFetch('/orders', {
   },
   transform: (response: TApiGenericResponse<any>) => {
     const { result } = response
-    return result
+    // console.log('orders', result)
+    const orderList = result.filter((order: any) => order.status === 0)
+    return orderList
   },
   onResponseError({ response }) {
     const { message } = response._data
     console.error('Error:', message)
-    // navigateTo('/')
+    navigateTo('/')
   },
 })
 const orderList = computed(() => {
@@ -93,10 +95,8 @@ async function handleDelete(id: string) {
         Authorization: token.value,
       },
     })
-    // fake data
-    const updatedOrderList = orderList.value.filter((item: any) => item._id !== id)
-    bookingList.value = updatedOrderList
     notifySuccess('訂單已成功刪除')
+    refresh()
     closeModal()
   }
   catch (error) {
