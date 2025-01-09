@@ -18,7 +18,7 @@ let modal: { show: () => void, hide: () => void }
 
 // SSR
 const { data: bookingList } = await useFetch('/orders', {
-  baseURL: 'https://nuxr3.zeabur.app/api/v1',
+  baseURL: apiBaseUrl,
   method: 'GET',
   headers: {
     Authorization: token.value,
@@ -30,7 +30,7 @@ const { data: bookingList } = await useFetch('/orders', {
   onResponseError({ response }) {
     const { message } = response._data
     console.error('Error:', message)
-    navigateTo('/')
+    // navigateTo('/')
   },
 })
 const orderList = computed(() => {
@@ -111,6 +111,10 @@ onMounted(() => {
 
 <template>
   <div class="row gap-6 gap-md-0">
+    <p v-if="orderList.length === 0" class="text-neutral-80 fs-8 fs-md-7 fw-bold text-center">
+      您目前沒有任何訂單
+    </p>
+
     <div class="col-12 col-md-7">
       <div
         v-if="orderList.length > 0"

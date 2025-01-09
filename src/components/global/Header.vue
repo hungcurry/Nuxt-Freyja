@@ -16,6 +16,7 @@ const userLoginObject = ref({
 })
 const { setUserInfo } = userStore
 const { userInfo } = storeToRefs(userStore)
+const { public: { apiBaseUrl } } = useRuntimeConfig()
 const isTransparentRoute = computed(() => {
   return transparentBgRoute.includes(route.name as string)
 })
@@ -48,8 +49,8 @@ async function handelLogin() {
 
   try {
     userLoginObject.value = JSON.parse(JSON.stringify(auth.value))
-    const { status, result } = await $fetch<TApiGenericResponse<TApiUser>>('/v1/user/login', {
-      baseURL: 'https://nuxr3.zeabur.app/api',
+    const { status, result } = await $fetch<TApiGenericResponse<TApiUser>>('/user/login', {
+      baseURL: apiBaseUrl,
       method: 'POST',
       body: userLoginObject.value,
     })
