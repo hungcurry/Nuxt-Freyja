@@ -55,8 +55,11 @@ async function handelLogin() {
       body: userLoginObject.value,
     })
 
-    if (status && result)
+    if (status && result) {
+      const sliceDetail = result.address.detail.replace(/^.+區/, '')
+      result.address.detail = sliceDetail
       setUserInfo(result)
+    }
   }
   catch (error) {
     if (error instanceof FetchError) {

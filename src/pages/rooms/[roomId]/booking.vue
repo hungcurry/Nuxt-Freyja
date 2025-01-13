@@ -114,6 +114,7 @@ async function createOrder(roomInfo: TApiRoomItem, userInfo: TUser) {
       peopleNum: bookingInfo.value?.peopleNum,
       userInfo: orderUserInfo,
     }
+    console.log('orderData', orderData)
     const response = await $fetch<TApiGenericResponse<any>>('/orders', {
       baseURL: apiBaseUrl,
       method: 'POST',

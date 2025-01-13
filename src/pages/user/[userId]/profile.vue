@@ -118,6 +118,7 @@ async function handleSaveProfile() {
     birthday: profileForm.value.birthday,
     address: profileForm.value.address,
   }
+  console.log('profileForm', profileForm.value)
   // api get...
   notifySuccess('資料已更新')
   isEditProfile.value = !isEditProfile.value
@@ -151,8 +152,9 @@ watchEffect(() => {
 
     // 轉(YYYY/MM/DD)
     const [year, month, day] = formatDate(new Date(birthday)).split('-')
+
     profileForm.value.year = year
-    profileForm.value.month = month
+    profileForm.value.month = String(Number.parseInt(month, 10))
     profileForm.value.day = String(Number.parseInt(day, 10))
   }
 })
