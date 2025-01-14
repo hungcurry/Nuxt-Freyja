@@ -1,12 +1,12 @@
 <script setup lang="ts">
 definePageMeta({
-  name: 'signup',
+  name: 'reset',
   layout: 'registerlayout',
 })
 </script>
 
 <template>
-  <AccountSignup />
+  <AccountResetPassword />
 </template>
 
 <style lang="scss" scoped>

@@ -23,6 +23,9 @@ const { notifyWarn, notifySuccess, notifyError } = useNotifications()
 const { bookingInfo } = storeToRefs(bookingStore)
 const { public: { apiBaseUrl } } = useRuntimeConfig()
 
+function handleGoToReset() {
+  navigateTo('/account/reset')
+}
 async function handelLogin() {
   if (!userLoginObject.value.email
     || !userLoginObject.value.password
@@ -169,6 +172,7 @@ onMounted(async () => {
         <button
           class="text-primary-100 fw-bold text-decoration-underline bg-transparent border-0"
           type="button"
+          @click="handleGoToReset"
         >
           忘記密碼？
         </button>
@@ -232,3 +236,4 @@ input::placeholder {
   border-color: #BF9D7D;
 }
 </style>
+  
