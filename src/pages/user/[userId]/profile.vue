@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { TApiGenericResponse } from '@/types/apiTypes'
 import type { TRememberMe, TUserRegister } from '@/types/dataTypes'
 import { cityList, ZipCodeMap } from '@/utils/zipcodes'
+import { FetchError } from 'ofetch'
 
 definePageMeta({
   name: 'user-profile',
@@ -8,6 +10,7 @@ definePageMeta({
 })
 
 const auth = useCookie<TRememberMe>('Freyja-auth')
+const token = useCookie<string>('Freyja-token')
 const userStore = useUserStore()
 const isEditPassword = ref(false)
 const isEditProfile = ref(false)
@@ -34,6 +37,7 @@ const profileForm = ref<TUserRegister>({
   month: '',
   day: '',
 })
+const { setUserInfo } = userStore
 const { userInfo } = storeToRefs(userStore)
 const { notifySuccess, notifyWarn, notifyError } = useNotifications()
 const { formatDate } = useDateRange()
@@ -64,46 +68,53 @@ async function handleSavePassword() {
   }
 
   const sendObj = {
-    email: passwordForm.value.email,
-    code: '0Zvjde',
+    userId: userInfo.value?._id,
+    name: userInfo.value?.name,
+    phone: userInfo.value?.phone,
+    birthday: userInfo.value?.birthday,
+    address: {
+      zipcode: profileForm.value.address.zipcode,
+      detail: profileForm.value.address.detail,
+    },
+    oldPassword,
     newPassword,
   }
-  // try {
-  //   const response = await $fetch<TApiGenericResponse<any>>('/v1/user/forgot', {
-  //     baseURL: apiBaseUrl,
-  //     method: 'POST',
-  //     body: sendObj,
-  //   })
+  try {
+    const { status } = await $fetch<TApiGenericResponse<any>>('/user', {
+      baseURL: apiBaseUrl,
+      method: 'PUT',
+      body: sendObj,
+      headers: {
+        Authorization: token.value,
+      },
+    })
 
-  //   if (response.status) {
-  //     console.log('response', response)
-  //   }
-  // }
-  // catch (error) {
-  //   if (error instanceof FetchError) {
-  //     console.error('Fetch failed:', error.response?._data)
-  //     const errorMessage = error.response?._data?.message || '登入失敗'
-  //     notifyError(errorMessage)
-  //   }
-  // }
-  // finally {
-  //   passwordForm.value.newPassword = ''
-  //   passwordForm.value.confirmPassword = ''
-  // }
-  passwordForm.value.oldPassword = sendObj.newPassword
-  notifySuccess('密碼已更新')
-  isEditPassword.value = !isEditPassword.value
+    if (status) {
+      auth.value.password = newPassword
+      notifySuccess('密碼已更新')
+      isEditPassword.value = !isEditPassword.value
+    }
+  }
+  catch (error) {
+    if (error instanceof FetchError) {
+      console.error('Fetch failed:', error.response?._data)
+      notifyError(error.response?._data?.message || '登入失敗')
+    }
+  }
+  finally {
+    passwordForm.value.newPassword = ''
+    passwordForm.value.confirmPassword = ''
+  }
 }
 async function handleSaveProfile() {
-  const { name, phone, birthday } = profileForm.value
+  const { name, phone } = profileForm.value
 
-  if (!name || !phone || !birthday) {
+  if (!name || !phone || !fullBirthday.value) {
     notifyWarn('資料不能為空')
     return
   }
 
-  if (fullBirthday.value)
-    profileForm.value.birthday = fullBirthday.value
+  profileForm.value.birthday = fullBirthday.value
 
   // 設定郵遞區號 / 組合地址
   if (districtList.value?.length) {
@@ -113,18 +124,41 @@ async function handleSaveProfile() {
   }
 
   const sendObj = {
+    userId: userInfo.value?._id,
     name,
     phone,
     birthday: profileForm.value.birthday,
-    address: profileForm.value.address,
+    address: {
+      zipcode: profileForm.value.address.zipcode,
+      detail: profileForm.value.address.detail,
+    },
   }
-  console.log('profileForm', profileForm.value)
-  // api get...
-  notifySuccess('資料已更新')
-  isEditProfile.value = !isEditProfile.value
+  try {
+    const { status, result } = await $fetch<TApiGenericResponse<any>>('/user', {
+      baseURL: apiBaseUrl,
+      method: 'PUT',
+      body: sendObj,
+      headers: {
+        Authorization: token.value,
+      },
+    })
+
+    if (status && result) {
+      result.address = profileForm.value.address
+      setUserInfo(result)
+      notifySuccess('資料已更新')
+      isEditProfile.value = !isEditProfile.value
+    }
+  }
+  catch (error) {
+    if (error instanceof FetchError) {
+      console.error('Fetch failed:', error.response?._data)
+      notifyError(error.response?._data?.message || '登入失敗')
+    }
+  }
 }
 if (auth.value) {
-  const { email, password } = JSON.parse(JSON.stringify(auth.value))
+  const { email, password } = auth.value
   passwordForm.value.email = email
   passwordForm.value.oldPassword = password
 }
@@ -135,16 +169,16 @@ watchEffect(() => {
       name,
       phone,
       birthday,
-      address: { city, county, detail, zipcode },
-    } = JSON.parse(JSON.stringify(userInfo.value))
+      address: { district, county, detail, zipcode },
+    } = userInfo.value
 
     Object.assign(profileForm.value, {
       name,
       phone,
       birthday,
       address: {
-        county: city,
-        district: county,
+        county,
+        district,
         detail,
         zipcode,
       },

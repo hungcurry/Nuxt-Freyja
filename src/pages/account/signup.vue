@@ -93,7 +93,7 @@ async function handelRegister() {
     birthday: fullBirthday,
     address: {
       zipcode: String(userRegisteObject.value.address.zipcode),
-      detail: fullAddress,
+      detail: userRegisteObject.value.address.detail,
     },
   }
   // console.log('userRegiste', userRegiste)

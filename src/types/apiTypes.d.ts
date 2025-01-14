@@ -78,7 +78,8 @@ type TApiUser = {
     zipcode: number
     detail: string
     county: string
-    city: string
+    district: string
+    city?: string
   }
   _id: string
   name: string

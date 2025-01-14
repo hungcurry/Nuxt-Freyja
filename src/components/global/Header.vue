@@ -16,6 +16,7 @@ const userLoginObject = ref({
 })
 const { setUserInfo } = userStore
 const { userInfo } = storeToRefs(userStore)
+const { notifySuccess, notifyWarn, notifyError } = useNotifications()
 const { public: { apiBaseUrl } } = useRuntimeConfig()
 const isTransparentRoute = computed(() => {
   return transparentBgRoute.includes(route.name as string)
@@ -54,10 +55,15 @@ async function handelLogin() {
       method: 'POST',
       body: userLoginObject.value,
     })
-
     if (status && result) {
       const sliceDetail = result.address.detail.replace(/^.+區/, '')
       result.address.detail = sliceDetail
+      result.address = {
+        zipcode: result.address.zipcode,
+        detail: sliceDetail,
+        district: result.address.county,
+        county: result.address.city ?? '未知',
+      }
       setUserInfo(result)
     }
   }
@@ -65,13 +71,18 @@ async function handelLogin() {
     if (error instanceof FetchError) {
       const errorMessage = error.response?._data?.message || '登入失敗'
       console.error('登入失敗:', errorMessage)
+      navigateTo('/account/login')
+      if (errorMessage === '密碼錯誤') {
+        notifyError('密碼錯誤')
+        auth.value = null
+      }
     }
   }
 }
 
 onMounted(async () => {
   window.addEventListener('scroll', handleScroll)
-  // await handleCheckLogin()
+  await handleCheckLogin()
   await handelLogin()
 })
 onUnmounted(() => {
