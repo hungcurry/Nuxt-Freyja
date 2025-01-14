@@ -2,6 +2,7 @@
 const route = useRoute()
 definePageMeta({
   layout: 'adminlayout',
+  middleware: 'admin-auth',
 })
 </script>
 

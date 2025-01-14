@@ -12,6 +12,7 @@ const {
   title: propsTitle = '立即開始旅程',
 } = defineProps<TProps>()
 
+const route = useRoute()
 const bookingStore = useBookingStore()
 const isDisabled = ref(false)
 const isChecked = ref(false)
@@ -56,14 +57,17 @@ async function handelLogin() {
       rememberMe.value = remember
       await notifySuccess('登入成功')
 
-      // 如果已經有訂房資料，則跳轉到訂房頁面
-      if (bookingInfo.value) {
-        const { roomId } = bookingInfo.value
-        navigateTo(`/rooms/${roomId}/booking`)
+      
+      // 判斷登入後要去哪個頁面
+      let redirectPath = '/'
+      if (route.path === '/admin/login') {
+        redirectPath = '/admin'
       }
-      else {
-        navigateTo('/')
+      else if (bookingInfo.value) {
+        redirectPath = `/rooms/${bookingInfo.value.roomId}/booking`
       }
+
+      return navigateTo(redirectPath)
     }
   }
   catch (error) {
@@ -236,4 +240,3 @@ input::placeholder {
   border-color: #BF9D7D;
 }
 </style>
-  

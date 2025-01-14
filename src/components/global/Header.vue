@@ -6,7 +6,7 @@ import { FetchError } from 'ofetch'
 
 const route = useRoute()
 const isScrolled = ref(false)
-const token = useCookie('Freyja-token')
+const token = useCookie<string | null>('Freyja-token')
 const auth = useCookie<TRememberMe | null>('Freyja-auth')
 const transparentBgRoute = ['home', 'rooms']
 const userStore = useUserStore()
@@ -21,6 +21,7 @@ const { public: { apiBaseUrl } } = useRuntimeConfig()
 const isTransparentRoute = computed(() => {
   return transparentBgRoute.includes(route.name as string)
 })
+let timer: NodeJS.Timeout | null = null
 
 function handleScroll() {
   isScrolled.value = window.scrollY > 50
@@ -36,13 +37,16 @@ function handleLogOut() {
   navigateTo('/')
 }
 function handleCheckLogin() {
-  const timer = setInterval(() => {
-    const checkToken = useCookie('Freyja-token')
+  timer = setInterval(() => {
+    const checkToken = useCookie<string | null>('Freyja-token')
+    // 如果 token 不一致，表示在其他分頁登出了
     if (token.value !== checkToken.value) {
+      if (timer)
+        clearInterval(timer)
+      token.value = null
       window.location.reload()
-      clearInterval(timer)
     }
-  }, 100)
+  }, 1000)
 }
 async function handelLogin() {
   if (!token.value || !auth.value)
@@ -87,6 +91,9 @@ onMounted(async () => {
 })
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  if (timer) {
+    clearInterval(timer)
+  }
 })
 </script>
 
