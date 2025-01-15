@@ -4,6 +4,9 @@ const isMenuOpen = ref(false)
 function toggleMenu() {
   isMenuOpen.value = !isMenuOpen.value
 }
+function closeMenu() {
+  isMenuOpen.value = false
+}
 </script>
 
 <template>
@@ -22,6 +25,13 @@ function toggleMenu() {
       </button>
     </header>
 
+    <!-- 遮罩層 -->
+    <div
+      v-if="isMenuOpen"
+      class="overlay"
+      @click="closeMenu"
+    />
+
     <nav
       id="sidebarMenu"
       :class="{ show: isMenuOpen }"
@@ -30,31 +40,56 @@ function toggleMenu() {
       <div class="sidebar-content">
         <ul class="nav-list">
           <li class="nav-item">
-            <NuxtLink to="/admin" class="nav-link link-hover" exact-active-class="active">
+            <NuxtLink
+              to="/admin"
+              class="nav-link link-hover"
+              exact-active-class="active"
+              @click="closeMenu"
+            >
               <i class="bi bi-house fs-4 me-2" />
               首頁
             </NuxtLink>
           </li>
           <li class="nav-item">
-            <NuxtLink to="/admin/orders" class="nav-link link-hover" exact-active-class="active">
+            <NuxtLink
+              to="/admin/orders"
+              class="nav-link link-hover"
+              exact-active-class="active"
+              @click="closeMenu"
+            >
               <i class="bi bi-filter-square fs-4 me-2" />
               訂單列表
             </NuxtLink>
           </li>
           <li class="nav-item">
-            <NuxtLink to="/admin/rooms" class="nav-link link-hover" exact-active-class="active">
+            <NuxtLink
+              to="/admin/rooms"
+              class="nav-link link-hover"
+              exact-active-class="active"
+              @click="closeMenu"
+            >
               <i class="bi bi-handbag fs-4 me-2" />
               房型管理
             </NuxtLink>
           </li>
           <li class="nav-item">
-            <NuxtLink to="/admin/news" class="nav-link link-hover" exact-active-class="active">
+            <NuxtLink
+              to="/admin/news"
+              class="nav-link link-hover"
+              exact-active-class="active"
+              @click="closeMenu"
+            >
               <i class="bi bi-card-text fs-4 me-2" />
               最新消息管理
             </NuxtLink>
           </li>
           <li class="nav-item">
-            <NuxtLink to="/admin/culinary" class="nav-link link-hover" exact-active-class="active">
+            <NuxtLink
+              to="/admin/culinary"
+              class="nav-link link-hover"
+              exact-active-class="active"
+              @click="closeMenu"
+            >
               <i class="bi bi-tags fs-4 me-2" />
               佳餚管理
             </NuxtLink>
@@ -95,6 +130,15 @@ function toggleMenu() {
       box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.25);
     }
   }
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1015;
 }
 .sidebar {
   position: fixed;

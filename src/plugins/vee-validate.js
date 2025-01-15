@@ -25,6 +25,12 @@ export default defineNuxtPlugin((nuxtApp) => {
       || '請輸入正確的手機號碼格式!ex.0912345678'
     )
   })
+  defineRule('greaterThanZero', (value) => {
+    if (value <= 0) {
+      return '數值必須大於 0'
+    }
+    return true
+  })
 
   // 設定多國語系與驗證訊息
   configure({

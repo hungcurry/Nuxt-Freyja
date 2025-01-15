@@ -1,5 +1,10 @@
 declare global {
-  namespace NodeJS {
+  module '#app' {
+    interface NuxtApp {
+      $formatPrice: (price: number) => string
+    }
+  }
+  module 'node' {
     interface ProcessEnv extends Record<string, string | number> {
       readonly PORT: number
       readonly DATABASE: string
@@ -11,19 +16,16 @@ declare global {
       readonly NODE_ENV: 'development' | 'production'
     }
   }
-
-  namespace Express {
+  module 'express' {
     // 擴展 Express Request 介面
     interface Request {
       user?: IUser | null
     }
   }
-
   // 瀏覽器全域變數
   interface Window {
     customMethod: () => void
   }
-
   // Vite 環境變數類型
   // import.meta 原本就是內建型別，預設型別
   // interface 能夠擴展內建型別，
@@ -36,35 +38,4 @@ declare global {
   interface ImportMeta {
     readonly env: ImportMetaEnv
   }
-}
-
-// 圖片資源模組聲明
-declare module '*.png' {
-  const value: string
-  export default value
-}
-
-declare module '*.jpg' {
-  const value: string
-  export default value
-}
-
-declare module '*.jpeg' {
-  const value: string
-  export default value
-}
-
-declare module '*.svg' {
-  const value: string
-  export default value
-}
-
-declare module '*.gif' {
-  const value: string
-  export default value
-}
-
-declare module '*.webp' {
-  const value: string
-  export default value
 }

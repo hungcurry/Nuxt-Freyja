@@ -27,6 +27,7 @@ const { public: { apiBaseUrl } } = useRuntimeConfig()
 function handleGoToReset() {
   navigateTo('/account/reset')
 }
+
 async function handelLogin() {
   if (!userLoginObject.value.email
     || !userLoginObject.value.password
@@ -57,7 +58,6 @@ async function handelLogin() {
       rememberMe.value = remember
       await notifySuccess('登入成功')
 
-      
       // 判斷登入後要去哪個頁面
       let redirectPath = '/'
       if (route.path === '/admin/login') {
@@ -67,7 +67,7 @@ async function handelLogin() {
         redirectPath = `/rooms/${bookingInfo.value.roomId}/booking`
       }
 
-      return navigateTo(redirectPath)
+      await navigateTo(redirectPath)
     }
   }
   catch (error) {
@@ -86,6 +86,7 @@ async function handelLogin() {
     }
   }
 }
+
 async function handleRememberMe() {
   const rememberMe = useCookie<TRememberMe | null>('Freyja-auth')
   if (rememberMe.value === undefined)
