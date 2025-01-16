@@ -80,7 +80,7 @@ function closeMenu() {
               @click="closeMenu"
             >
               <i class="bi bi-card-text fs-4 me-2" />
-              最新消息管理
+              消息管理
             </NuxtLink>
           </li>
           <li class="nav-item">
