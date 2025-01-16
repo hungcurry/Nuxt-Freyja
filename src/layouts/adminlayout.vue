@@ -12,13 +12,38 @@ function closeMenu() {
 <template>
   <div class="template">
     <header class="header navbar navbar-dark sticky-top flex-wrap flex-md-nowrap shadow bg-neutral-120">
-      <p class="text-white mb-0">
-        Freyja後台
-      </p>
+      <div class="d-flex align-items-center">
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          class="me-2"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="16"
+            cy="16"
+            r="14"
+            fill="#8BAFD7"
+          />
+          <path d="M10 12L16 8L22 12V20L16 24L10 20V12Z" fill="white" />
+          <path d="M16 8L22 12L16 16L10 12L16 8Z" fill="#EBF1F8" />
+          <path d="M16 24V16L22 12V20L16 24Z" fill="#D3E2F2" />
+          <path d="M10 20V12L16 16V24L10 20Z" fill="#E0EAF5" />
+        </svg>
+        <div class="d-flex flex-column">
+          <h1 class="text-white fs-5 mb-0 fw-bold">
+            Freyja
+          </h1>
+          <small class="text-white-50">後台管理系統</small>
+        </div>
+      </div>
       <button
         class="navbar-toggler d-lg-none me-2"
         :class="{ collapsed: !isMenuOpen }"
         type="button"
+        aria-label="切換選單"
         @click="toggleMenu"
       >
         <span class="navbar-toggler-icon" />

@@ -25,6 +25,20 @@ export default defineNuxtPlugin((nuxtApp) => {
       || '請輸入正確的手機號碼格式!ex.0912345678'
     )
   })
+  defineRule('password', (value) => {
+    if (!value) {
+      return '密碼為必填項目'
+    }
+    if (value.length < 8) {
+      return '密碼需至少 8 碼以上'
+    }
+    const hasLetter = /[a-z]/i.test(value)
+    const hasNumber = /\d/.test(value)
+    if (!hasLetter || !hasNumber) {
+      return '密碼必須包含字母和數字'
+    }
+    return true
+  })
   defineRule('greaterThanZero', (value) => {
     if (value <= 0) {
       return '數值必須大於 0'

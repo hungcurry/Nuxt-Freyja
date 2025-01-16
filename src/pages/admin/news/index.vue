@@ -7,6 +7,7 @@ definePageMeta({
   middleware: ['admin-auth'],
 })
 
+const route = useRoute()
 const token = useCookie<string | null>('Freyja-token')
 const { $swal } = useNuxtApp()
 const { notifyWarn, notifySuccess, notifyError } = useNotifications()
@@ -79,6 +80,7 @@ useSeoMeta({
   <h1 class="fs-3 mt-3">
     消息管理
   </h1>
+  <small>Breadcrumb: {{ route.fullPath }}</small>
   <div class="card my-1 my-lg-4 shadow-sm">
     <div class="card-header">
       <div class="text-end py-2">
